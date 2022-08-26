@@ -91,7 +91,6 @@ public :
    virtual Long64_t LoadTree(Long64_t entry);
    virtual void     Init(TTree *tree);
    virtual void     Display();
-   virtual float    CycleToSec(int cyc);
    virtual void     Debug(bool debug, Long64_t entry);
    virtual Bool_t   Notify();
    virtual void     Show(Long64_t entry = -1);
@@ -101,7 +100,6 @@ public :
    virtual void     GoTo();
    virtual void     DropEvent();
    virtual Bool_t   GotoEvent(Int_t ev);
-   virtual TEveCaloLego* MakeCaloLego(TEveCaloData* data, TEveWindowSlot* slot);
    virtual void     MakeViewerScene(TEveWindowSlot* slot, TEveViewer*& v, TEveScene*& s);
    virtual void     LoadHits(TEvePointSet*& ps,int i);
 

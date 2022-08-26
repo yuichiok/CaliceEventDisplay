@@ -1,5 +1,4 @@
 #define TBDisplay_cxx
-#define Fit3D_cxx
 
 #include <TH2.h>
 #include <TStyle.h>
@@ -29,9 +28,7 @@
 #include <map>
 
 #include "../include/TBDisplay.hh"
-#include "../include/Fit3D.hh"
-
-#include "../MultiView.C"
+#include "../include/MultiView.hh"
 MultiView* gMultiView = 0;
 
 using std::cout;
@@ -41,16 +38,6 @@ const bool debug = false;
 const int nslabs = 15;
 const int nscas = 15;
 const float beamX = 20.0, beamY = 15.0;
-
-// define the parametric line equation
-void line(double t, const double *p, double &x, double &y, double &z) {
-   // a parametric line is define from 6 parameters but 4 are independent
-   // x0,y0,z0,z1,y1,z1 which are the coordinates of two points on the line
-   // can choose z0 = 0 if line not parallel to x-y plane and z1 = 1;
-   x = p[0] + p[1]*t;
-   y = p[2] + p[3]*t;
-   z = t;
-}
 
 void TBDisplay::Next()
 {
@@ -145,32 +132,6 @@ Bool_t TBDisplay::GotoEvent(Int_t ev)
 
    } // match slab
 
-   /*
-   ROOT::Fit::Fitter  fitter;
-
-   // make the functor objet
-   Fit3D sdist(gr);
-   ROOT::Math::Functor fcn(sdist,4);
-   // set the function and the initial parameter values
-   double pStart[4] = {1,1,1,1};
-   fitter.SetFCN(fcn,pStart);
-   // set step sizes different than default ones (0.3 times parameter values)
-   for (int i = 0; i < 4; ++i) fitter.Config().ParSettings(i).SetStepSize(0.01);
- 
-   bool ok = fitter.FitFCN();
-   if (!ok) {
-      Error("line3Dfit","Line3D Fit failed");
-      return false;
-   }
-
-   const ROOT::Fit::FitResult & result = fitter.Result();
- 
-   std::cout << "Total final distance square " << result.MinFcnValue() << std::endl;
-   result.Print(std::cout);
- 
-   gr->Draw("p0");
-   */
-
    // color scale
    /*
    for (int i = 0; i < 10; i++)
@@ -191,65 +152,10 @@ Bool_t TBDisplay::GotoEvent(Int_t ev)
 
    }
    */
-   
-
-   // auto data = new TEvePlot3D("EvePlot - TH3F");
-   // ecalHist3->SetFillColor(2);
-   // data->SetPlot(ecalHist3, "box2");
-   // gEve->AddElement(data);
-
-   // auto data = new TEveCaloDataHist();
-   // data->AddHistogram(ecalHist2);
-   // data->RefSliceInfo(0).Setup("ECAL", 0.3, kBlue);
-   // data->IncDenyDestroy();
-   // gEve->AddToListTree(data, kFALSE);
-
-   // auto lego = MakeCaloLego(data, 0);
 
    gEve->Redraw3D(kFALSE, kTRUE);
 
    return kTRUE;
-}
-
-TEveCaloLego* TBDisplay::MakeCaloLego(TEveCaloData* data, TEveWindowSlot* slot)
-{
-   // Eta-phi lego view.
-
-   TEveViewer* v;
-   TEveScene* s;
-   if (slot) {
-      MakeViewerScene(slot, v, s);
-   } else {
-      v = gEve->GetDefaultViewer();
-      s = gEve->GetEventScene();
-   }
-   v->SetElementName("Viewer - Lego");
-   s->SetElementName("Scene - Lego");
-
-   auto lego = new TEveCaloLego(data);
-   s->AddElement(lego);
-
-   // By the default lego extends is (1x1x1). Resize it to put in 'natural'
-   // coordinates, so that y extend in 2*Pi and set height of lego two times
-   //  smaller than y extend to have better view in 3D perspective.
-   // lego->InitMainTrans();
-   // lego->RefMainTrans().SetScale(TMath::TwoPi(), TMath::TwoPi(), TMath::Pi());
-
-   // draws scales and axis on borders of window
-   // auto glv = v->GetGLViewer();
-   // TEveCaloLegoOverlay* overlay = new TEveCaloLegoOverlay();
-   // glv->AddOverlayElement(overlay);
-   // overlay->SetCaloLego(lego);
-
-   // set event handler to move from perspective to orthographic view.
-/*
-   glv->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
-   glv->SetEventHandler
-      (new TEveLegoEventHandler(glv->GetGLWidget(), glv, lego));
-   gEve->AddToListTree(lego, kTRUE);
-*/
-
-   return lego;
 }
 
 //______________________________________________________________________________
@@ -287,7 +193,6 @@ void TBDisplay::LoadHits(TEvePointSet*& ps, int i)
                                  hit_isCommissioned[i],
                                  hit_isHit[i],
                                  hit_slab[i], hit_chip[i], hit_chan[i], hit_sca[i]));
-   // ps->SetTitle(TString::Format("hit_energy=%f", hit_energy[i]));
 
    gEve->AddElement(ps);
 }
@@ -299,17 +204,6 @@ void TBDisplay::Display()
    int cnt_event = 0;
 
    cout << "Done.\n";
-
-}
-
-float TBDisplay::CycleToSec(int cyc=-1)
-{
-   float aq_sec      = 0.001;
-   float aqdelay_sec = 0.01;
-   float spc = aq_sec + aqdelay_sec;
-   float time_passed = spc * cyc;
-
-   return time_passed;
 
 }
 

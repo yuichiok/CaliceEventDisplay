@@ -26,12 +26,11 @@ void run(int set_ene = 10, string particle = "e"){
 	};
 
 	TString filein = "default";
-	string fileinpath = "../../../data/reco/raw_siwecal_90";
+	string fileinpath = "../../CaliceAnalysis/data/reco/raw_siwecal_90";
 	filein = fileinpath + run_list[name] + "/full_run.root";
 
 	cout << "Input: " << filein << endl; 
 
-	// TBDisplay *gDisplay = new TBDisplay(filein);
 	gDisplay = new TBDisplay(filein);
 
 	TFile::SetCacheFileDir(".");
@@ -47,8 +46,6 @@ void run(int set_ene = 10, string particle = "e"){
 	// gEve->AddGlobalElement(SiWECAL);
 
 	gStyle->SetOptStat(0);
-
-	// gEve->GetViewers()->SwitchColorSet();
 
 	TGLViewer *tglv = gEve->GetDefaultGLViewer();
 	tglv->SetGuideState(TGLUtil::kAxesEdge, kTRUE, kFALSE, 0);
@@ -67,8 +64,6 @@ void run(int set_ene = 10, string particle = "e"){
 	// gDisplay->Display();
 
 	ROOT::Math::MinimizerOptions::SetDefaultMaxFunctionCalls( 200 );
-
-	// gSystem->Exit(0);
 
 }
 
@@ -89,15 +84,15 @@ void make_gui()
       TString icondir("./icons/");
       TGPictureButton* b = 0;
 
-      b = new TGPictureButton(hf, gClient->GetPicture(icondir+"GoBack.gif"));
+      b = new TGPictureButton(hf, gClient->GetPicture(icondir+"back.png"));
       hf->AddFrame(b);
       b->Connect("Clicked()", "TBDisplay", gDisplay, "Prev()");
 
-      b = new TGPictureButton(hf, gClient->GetPicture(icondir+"info.gif"));
+      b = new TGPictureButton(hf, gClient->GetPicture(icondir+"search.png"));
       hf->AddFrame(b);
       b->Connect("Clicked()", "TBDisplay", gDisplay, "GoTo()");
 
-      b = new TGPictureButton(hf, gClient->GetPicture(icondir+"GoForward.gif"));
+      b = new TGPictureButton(hf, gClient->GetPicture(icondir+"next.png"));
       hf->AddFrame(b);
       b->Connect("Clicked()", "TBDisplay", gDisplay, "Next()");
    }

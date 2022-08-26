@@ -1,13 +1,5 @@
-/// \file
-/// \ingroup tutorial_eve
-/// Multi-view (3d, rphi, rhoz) service class using EVE Window Manager.
-/// Used together with alice_esd.C macro
-///
-/// \macro_code
-///
-/// \author Matevz Tadel
-#ifndef MultiView_cxx
-#define MultiView_cxx
+#ifndef MultiView_h
+#define MultiView_h
 
 #include <TEveManager.h>
 
