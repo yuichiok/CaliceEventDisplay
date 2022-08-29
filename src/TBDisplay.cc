@@ -38,6 +38,7 @@ const bool debug = false;
 const int nslabs = 15;
 const int nscas = 15;
 const float beamX = 20.0, beamY = 15.0;
+const float MARKER_SIZE = 3.5;
 
 void TBDisplay::Next()
 {
@@ -89,7 +90,10 @@ Bool_t TBDisplay::GotoEvent(Int_t ev)
    fCurEv = ev;
 
    Long64_t ientry = LoadTree( evlist->GetEntry(ev) );
-   if (ientry == 0) return kFALSE;
+   if (ientry == 0) {
+      Warning("GotoEvent", "Entry is empty");
+      return kFALSE;
+   }
 
    nb = fChain->GetEntry(evlist->GetEntry(ev));
 
@@ -98,10 +102,26 @@ Bool_t TBDisplay::GotoEvent(Int_t ev)
    float Zcm[nslabs] = {0};
    float Wsum[nslabs] = {0};
 
+/*
+   const Int_t Number = 3;
+   Double_t Red[Number]    = { 1.00, 0.00, 0.00};
+   Double_t Green[Number]  = { 0.00, 1.00, 0.00};
+   Double_t Blue[Number]   = { 1.00, 0.00, 1.00};
+   Double_t Length[Number] = { 0.00, 0.5, 2.0 };
+   TColor::CreateGradientColorTable(Number,Length,Red,Green,Blue,nhit_len);
+*/
+
+   TEveRGBAPalette *p = new TEveRGBAPalette(0, 1);
+   p->SetupColorArray();
+
+
+   LoadHits_Box(fHits_Box);
+
    // Load event data into visualization structures.
    for (int ihit=0; ihit<nhit_len; ihit++){
       
-      LoadHits(fHits,ihit);
+      // LoadHits(fHits,ihit);
+      // LoadHits_Box(fHits_Box,ihit);
 
       for (int islab = 0; islab < nslabs; islab++)
       {
@@ -133,25 +153,7 @@ Bool_t TBDisplay::GotoEvent(Int_t ev)
    } // match slab
 
    // color scale
-   /*
-   for (int i = 0; i < 10; i++)
-   {
-      TEvePointSet* ps = new TEvePointSet("Hit");
-      ps->SetOwnIds(kTRUE);
-      ps->SetMarkerSize(3.5);
-      ps->SetMarkerStyle(54);
-      ps->IncDenyDestroy();
-
-      ps->SetNextPoint(-95,-95,i * 10);
-      ps->SetMainColor(TColor::GetColorPalette
-                     (i*50.0));
-      ps->SetPointId(new TNamed(Form("Point %d", nhit_len + i), ""));
-      ps->SetTitle(TString::Format("Palette=%f", (float)i * 50.0));
-
-      gEve->AddElement(ps);
-
-   }
-   */
+   // ColorBar();
 
    gEve->Redraw3D(kFALSE, kTRUE);
 
@@ -175,13 +177,15 @@ void TBDisplay::LoadHits(TEvePointSet*& ps, int i)
 {
    ps = new TEvePointSet("Hit");
    ps->SetOwnIds(kTRUE);
-   ps->SetMarkerSize(3.5);
+   ps->SetMarkerSize(MARKER_SIZE);
    ps->SetMarkerStyle(54);
    ps->IncDenyDestroy();
 
    ps->SetNextPoint(hit_x[i],hit_y[i],hit_z[i]);
+   // ps->SetMainColor(TColor::GetColorPalette
+   //                  (hit_adc_high[i]));
    ps->SetMainColor(TColor::GetColorPalette
-                    (hit_adc_high[i]));
+                    (hit_energy[i]));
    if(hit_adc_high[i] < hit_energy[i]) ps->SetMainColor(kRed);
    // if(hit_energy[i] > 700) ps->SetMainColor(kRed);
    // ps->SetMainColor(TColor::GetColorPalette
@@ -195,6 +199,70 @@ void TBDisplay::LoadHits(TEvePointSet*& ps, int i)
                                  hit_slab[i], hit_chip[i], hit_chan[i], hit_sca[i]));
 
    gEve->AddElement(ps);
+}
+
+void TBDisplay::LoadHits_Box(TEveBoxSet*& bs)
+{
+   auto pal = new TEveRGBAPalette(0, 10);
+
+   // auto frm = new TEveFrameBox();
+   // frm->SetAABoxCenterHalfSize(0, 0, 100, 95, 95, 100);
+   // frm->SetFrameColor(kCyan);
+   // frm->SetBackColorRGBA(120,120,120,20);
+   // frm->SetDrawBack(kTRUE);
+
+   auto q = new TEveBoxSet("BoxSet");
+   q->SetPalette(pal);
+   // q->SetFrame(frm);
+   q->Reset(TEveBoxSet::kBT_AABox, kFALSE, 64);
+   for (Int_t ihit=0; ihit<nhit_len; ++ihit) {
+      q->SetTitle(TString::Format("hit_adc_high=%i\n hit_energy=%f\n hit_isCommissioned=%i\n hit_isHit=%i\n (%i,%i,%i,%i)",
+                                    hit_adc_high[ihit],
+                                    hit_energy[ihit],
+                                    hit_isCommissioned[ihit],
+                                    hit_isHit[ihit],
+                                    hit_slab[ihit], hit_chip[ihit], hit_chan[ihit], hit_sca[ihit]));
+
+      q->AddBox(hit_x[ihit], hit_y[ihit], hit_z[ihit],
+                5, 5, 0.5);
+      q->DigitValue(hit_energy[ihit]);
+   }
+   q->RefitPlex();
+
+   TEveTrans& t = q->RefMainTrans();
+   t.SetPos(0,0,0);
+
+   // Uncomment these two lines to get internal highlight / selection.
+   q->SetPickable(1);
+   q->SetAlwaysSecSelect(1);
+
+   if (1)
+   {
+      gEve->AddElement(q);
+      gEve->Redraw3D(kTRUE);
+   }
+
+}
+
+void TBDisplay::ColorBar()
+{
+   for (int i = 0; i < 10; i++)
+   {
+      TEvePointSet* ps = new TEvePointSet("Hit");
+      ps->SetOwnIds(kTRUE);
+      ps->SetMarkerSize(MARKER_SIZE);
+      ps->SetMarkerStyle(54);
+      ps->IncDenyDestroy();
+
+      ps->SetNextPoint(-95,-95,i * 10);
+      ps->SetMainColor(TColor::GetColorPalette
+                     (i*50.0));
+      ps->SetPointId(new TNamed(Form("Point %d", nhit_len + i), ""));
+      ps->SetTitle(TString::Format("Palette=%f", (float)i * 50.0));
+
+      gEve->AddElement(ps);
+
+   }
 }
 
 void TBDisplay::Display()
