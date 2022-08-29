@@ -102,13 +102,13 @@ Bool_t TBDisplay::GotoEvent(Int_t ev)
    float Zcm[nslabs] = {0};
    float Wsum[nslabs] = {0};
 
-   LoadHits_Box(fHits_Box);
+   // LoadHits_Box(fHits_Box);
 
    // Load event data into visualization structures.
    for (int ihit=0; ihit<nhit_len; ihit++){
       
       // LoadHits(fHits,ihit);
-      // LoadHits_Box(fHits_Box,ihit);
+      LoadHits_Box(fHits_Box,ihit);
 
       for (int islab = 0; islab < nslabs; islab++)
       {
@@ -140,7 +140,7 @@ Bool_t TBDisplay::GotoEvent(Int_t ev)
    } // match slab
 
    // Add overlayed color bar
-   ColorBar();
+   // ColorBar();
 
    gEve->Redraw3D(kFALSE, kTRUE);
 
@@ -187,25 +187,25 @@ void TBDisplay::LoadHits(TEvePointSet*& ps, int i)
    gEve->AddElement(ps);
 }
 
-void TBDisplay::LoadHits_Box(TEveBoxSet*& bs)
-{
+TEveRGBAPalette *pal = new TEveRGBAPalette(0, 100);
 
+void TBDisplay::LoadHits_Box(TEveBoxSet*& bs, int i)
+{
    bs = new TEveBoxSet("BoxSet");
-   bs->SetPalette(pal);
+   // ここが問題っぽい
+   // bs->SetPalette(pal);
    bs->Reset(TEveBoxSet::kBT_AABox, kFALSE, 64);
 
-   for (Int_t ihit=0; ihit<nhit_len; ++ihit) {
+   bs->AddBox(hit_x[i], hit_y[i], hit_z[i],
+               5, 5, 0.5);
+   bs->DigitValue(hit_energy[i]);
 
-      bs->AddBox(hit_x[ihit], hit_y[ihit], hit_z[ihit],
-                5, 5, 0.5);
-      bs->DigitValue(hit_energy[ihit]);
+   bs->SetName(TString::Format("hit_adc_high=%i\n hit_energy=%f\n hit_isHit=%i\n (%i,%i,%i,%i)",
+                                 hit_adc_high[i],
+                                 hit_energy[i],
+                                 hit_isHit[i],
+                                 hit_slab[i], hit_chip[i], hit_chan[i], hit_sca[i]));
 
-      // q->SetName(TString::Format("hit_adc_high=%i\n hit_energy=%f\n hit_isHit=%i\n (%i,%i,%i,%i)\n",
-      //                               hit_adc_high[ihit],
-      //                               hit_energy[ihit],
-      //                               hit_isHit[ihit],
-      //                               hit_slab[ihit], hit_chip[ihit], hit_chan[ihit], hit_sca[ihit]));
-   }
 
    bs->RefitPlex();
 
@@ -215,8 +215,8 @@ void TBDisplay::LoadHits_Box(TEveBoxSet*& bs)
    t.SetPos(0,0,0);
 
    // Uncomment these two lines to get internal highlight / selection.
-   // bs->SetPickable(1);
-   // bs->SetAlwaysSecSelect(1);
+   bs->SetPickable(1);
+   bs->SetAlwaysSecSelect(1);
 
    gEve->AddElement(bs);
 

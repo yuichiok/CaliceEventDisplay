@@ -102,12 +102,11 @@ public :
    virtual Bool_t   GotoEvent(Int_t ev);
    virtual void     MakeViewerScene(TEveWindowSlot* slot, TEveViewer*& v, TEveScene*& s);
    virtual void     LoadHits(TEvePointSet*& ps,int i);
-   virtual void     LoadHits_Box(TEveBoxSet*& bs);
+   virtual void     LoadHits_Box(TEveBoxSet*& bs,int i);
    virtual void     ColorBar();
 
    TEvePointSet  *fHits;
    TEveBoxSet  *fHits_Box;
-   TEveRGBAPalette *pal = new TEveRGBAPalette(0, 20);
 
    TEventList *evlist;
    Int_t fMaxEv, fCurEv;
