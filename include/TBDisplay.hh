@@ -107,6 +107,7 @@ public :
 
    TEvePointSet  *fHits;
    TEveBoxSet  *fHits_Box;
+   TEveRGBAPalette *pal = new TEveRGBAPalette(0, 20);
 
    TEventList *evlist;
    Int_t fMaxEv, fCurEv;

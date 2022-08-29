@@ -62,7 +62,7 @@ void TBDisplay::GoTo() {
 }
 
 void TBDisplay::DropEvent()
-{
+{   
    gEve->GetViewers()->DeleteAnnotations();
    gEve->GetCurrentEvent()->DestroyElements();
 }
@@ -102,19 +102,6 @@ Bool_t TBDisplay::GotoEvent(Int_t ev)
    float Zcm[nslabs] = {0};
    float Wsum[nslabs] = {0};
 
-/*
-   const Int_t Number = 3;
-   Double_t Red[Number]    = { 1.00, 0.00, 0.00};
-   Double_t Green[Number]  = { 0.00, 1.00, 0.00};
-   Double_t Blue[Number]   = { 1.00, 0.00, 1.00};
-   Double_t Length[Number] = { 0.00, 0.5, 2.0 };
-   TColor::CreateGradientColorTable(Number,Length,Red,Green,Blue,nhit_len);
-*/
-
-   TEveRGBAPalette *p = new TEveRGBAPalette(0, 1);
-   p->SetupColorArray();
-
-
    LoadHits_Box(fHits_Box);
 
    // Load event data into visualization structures.
@@ -152,8 +139,8 @@ Bool_t TBDisplay::GotoEvent(Int_t ev)
 
    } // match slab
 
-   // color scale
-   // ColorBar();
+   // Add overlayed color bar
+   ColorBar();
 
    gEve->Redraw3D(kFALSE, kTRUE);
 
@@ -191,10 +178,9 @@ void TBDisplay::LoadHits(TEvePointSet*& ps, int i)
    // ps->SetMainColor(TColor::GetColorPalette
    //                  (hit_energy[i]));
    ps->SetPointId(new TNamed(Form("Point %d", i), ""));
-   ps->SetTitle(TString::Format("hit_adc_high=%i\n hit_energy=%f\n hit_isCommissioned=%i\n hit_isHit=%i\n (%i,%i,%i,%i)",
+   ps->SetTitle(TString::Format("hit_adc_high=%i\n hit_energy=%f\n hit_isHit=%i\n (%i,%i,%i,%i)",
                                  hit_adc_high[i],
                                  hit_energy[i],
-                                 hit_isCommissioned[i],
                                  hit_isHit[i],
                                  hit_slab[i], hit_chip[i], hit_chan[i], hit_sca[i]));
 
@@ -203,66 +189,44 @@ void TBDisplay::LoadHits(TEvePointSet*& ps, int i)
 
 void TBDisplay::LoadHits_Box(TEveBoxSet*& bs)
 {
-   auto pal = new TEveRGBAPalette(0, 10);
 
-   // auto frm = new TEveFrameBox();
-   // frm->SetAABoxCenterHalfSize(0, 0, 100, 95, 95, 100);
-   // frm->SetFrameColor(kCyan);
-   // frm->SetBackColorRGBA(120,120,120,20);
-   // frm->SetDrawBack(kTRUE);
+   bs = new TEveBoxSet("BoxSet");
+   bs->SetPalette(pal);
+   bs->Reset(TEveBoxSet::kBT_AABox, kFALSE, 64);
 
-   auto q = new TEveBoxSet("BoxSet");
-   q->SetPalette(pal);
-   // q->SetFrame(frm);
-   q->Reset(TEveBoxSet::kBT_AABox, kFALSE, 64);
    for (Int_t ihit=0; ihit<nhit_len; ++ihit) {
-      q->SetTitle(TString::Format("hit_adc_high=%i\n hit_energy=%f\n hit_isCommissioned=%i\n hit_isHit=%i\n (%i,%i,%i,%i)",
-                                    hit_adc_high[ihit],
-                                    hit_energy[ihit],
-                                    hit_isCommissioned[ihit],
-                                    hit_isHit[ihit],
-                                    hit_slab[ihit], hit_chip[ihit], hit_chan[ihit], hit_sca[ihit]));
 
-      q->AddBox(hit_x[ihit], hit_y[ihit], hit_z[ihit],
+      bs->AddBox(hit_x[ihit], hit_y[ihit], hit_z[ihit],
                 5, 5, 0.5);
-      q->DigitValue(hit_energy[ihit]);
-   }
-   q->RefitPlex();
+      bs->DigitValue(hit_energy[ihit]);
 
-   TEveTrans& t = q->RefMainTrans();
+      // q->SetName(TString::Format("hit_adc_high=%i\n hit_energy=%f\n hit_isHit=%i\n (%i,%i,%i,%i)\n",
+      //                               hit_adc_high[ihit],
+      //                               hit_energy[ihit],
+      //                               hit_isHit[ihit],
+      //                               hit_slab[ihit], hit_chip[ihit], hit_chan[ihit], hit_sca[ihit]));
+   }
+
+   bs->RefitPlex();
+
+   // ColorBar();
+
+   TEveTrans& t = bs->RefMainTrans();
    t.SetPos(0,0,0);
 
    // Uncomment these two lines to get internal highlight / selection.
-   q->SetPickable(1);
-   q->SetAlwaysSecSelect(1);
+   // bs->SetPickable(1);
+   // bs->SetAlwaysSecSelect(1);
 
-   if (1)
-   {
-      gEve->AddElement(q);
-      gEve->Redraw3D(kTRUE);
-   }
+   gEve->AddElement(bs);
 
 }
 
 void TBDisplay::ColorBar()
 {
-   for (int i = 0; i < 10; i++)
-   {
-      TEvePointSet* ps = new TEvePointSet("Hit");
-      ps->SetOwnIds(kTRUE);
-      ps->SetMarkerSize(MARKER_SIZE);
-      ps->SetMarkerStyle(54);
-      ps->IncDenyDestroy();
-
-      ps->SetNextPoint(-95,-95,i * 10);
-      ps->SetMainColor(TColor::GetColorPalette
-                     (i*50.0));
-      ps->SetPointId(new TNamed(Form("Point %d", nhit_len + i), ""));
-      ps->SetTitle(TString::Format("Palette=%f", (float)i * 50.0));
-
-      gEve->AddElement(ps);
-
-   }
+   auto po = new TEveRGBAPaletteOverlay(pal, 0.55, 0.1, 0.4, 0.05);
+   auto v  = gEve->GetDefaultGLViewer();
+   v->AddOverlayElement(po);
 }
 
 void TBDisplay::Display()
