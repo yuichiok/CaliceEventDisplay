@@ -97,45 +97,13 @@ Bool_t TBDisplay::GotoEvent(Int_t ev)
 
    nb = fChain->GetEntry(evlist->GetEntry(ev));
 
-   float Xcm[nslabs] = {0};
-   float Ycm[nslabs] = {0};
-   float Zcm[nslabs] = {0};
-   float Wsum[nslabs] = {0};
-
    // Load event data into visualization structures.
    for (int ihit=0; ihit<nhit_len; ihit++){
       
       // LoadHits(fHits,ihit);
       LoadHits_Box(fHits_Box,ihit);
 
-      for (int islab = 0; islab < nslabs; islab++)
-      {
-         if (hit_slab[ihit]==islab)
-         {
-            // Xcm[islab]  += hit_x[ihit] * hit_energy[ihit];
-            // Ycm[islab]  += hit_y[ihit] * hit_energy[ihit];
-            Xcm[islab]  += hit_x[ihit] * hit_adc_high[ihit];
-            Ycm[islab]  += hit_y[ihit] * hit_adc_high[ihit];
-            Zcm[islab]  =  hit_z[ihit];
-            Wsum[islab] += hit_adc_high[ihit];
-         }
-
-      } // match slab
-
    } // hit loop
-
-   int N = 0;
-   for (int islab = 0; islab < nslabs; islab++)
-   {
-      if(Xcm[islab]==0 || Ycm[islab]==0) continue;
-
-      Xcm[islab] = Xcm[islab] / Wsum[islab];
-      Ycm[islab] = Ycm[islab] / Wsum[islab];
-
-      gr->SetPoint(N,Xcm[islab],Ycm[islab],Zcm[islab]);
-      N++;
-
-   } // match slab
 
    // Add overlayed color bar
    ColorBar();

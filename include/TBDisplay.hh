@@ -159,16 +159,6 @@ TBDisplay::~TBDisplay()
    delete fChain->GetCurrentFile();
 }
 
-// TBDisplay::Select(TTree* tree)
-// {
-//    TEventList *evlist = new TEventList( "elist", "Coincidence Selection" ) ;
-//    tree->Draw( ">>evlist", "nhit_slab >= 13");
-
-//    TTree * newtree;
-//    newtree->SetEventList(evlist);
-//    return newtree;
-// }
-
 Int_t TBDisplay::GetEntry(Long64_t entry)
 {
 // Read contents of entry.
