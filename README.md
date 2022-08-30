@@ -3,6 +3,11 @@ Event display program allows you to see the structure of observed hit points in 
 
 ![Hit Map](img/hitmap.png?raw=true "Title")
 
+In order to run the code:
+```
+root -l run.cc\(\"/path/to/file/full_run.root\"\)
+```
+
 In this program, you can
  - Read through each event reconstructed by the event building macro. ([SiWECAL-TB-monitoring](https://github.com/SiWECAL-TestBeam/SiWECAL-TB-monitoring))
    - One can have a handle on event by event analysis.
