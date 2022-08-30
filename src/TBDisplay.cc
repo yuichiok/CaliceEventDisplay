@@ -102,8 +102,6 @@ Bool_t TBDisplay::GotoEvent(Int_t ev)
    float Zcm[nslabs] = {0};
    float Wsum[nslabs] = {0};
 
-   // LoadHits_Box(fHits_Box);
-
    // Load event data into visualization structures.
    for (int ihit=0; ihit<nhit_len; ihit++){
       
@@ -140,7 +138,7 @@ Bool_t TBDisplay::GotoEvent(Int_t ev)
    } // match slab
 
    // Add overlayed color bar
-   // ColorBar();
+   ColorBar();
 
    gEve->Redraw3D(kFALSE, kTRUE);
 
@@ -187,13 +185,13 @@ void TBDisplay::LoadHits(TEvePointSet*& ps, int i)
    gEve->AddElement(ps);
 }
 
-TEveRGBAPalette *pal = new TEveRGBAPalette(0, 100);
-
 void TBDisplay::LoadHits_Box(TEveBoxSet*& bs, int i)
 {
    bs = new TEveBoxSet("BoxSet");
-   // ここが問題っぽい
-   // bs->SetPalette(pal);
+   TEveRGBAPalette *pal = new TEveRGBAPalette(0, 10);
+   pal->SetupColorArray();
+   bs->SetPalette(pal);
+
    bs->Reset(TEveBoxSet::kBT_AABox, kFALSE, 64);
 
    bs->AddBox(hit_x[i], hit_y[i], hit_z[i],
@@ -209,8 +207,6 @@ void TBDisplay::LoadHits_Box(TEveBoxSet*& bs, int i)
 
    bs->RefitPlex();
 
-   // ColorBar();
-
    TEveTrans& t = bs->RefMainTrans();
    t.SetPos(0,0,0);
 
@@ -224,6 +220,8 @@ void TBDisplay::LoadHits_Box(TEveBoxSet*& bs, int i)
 
 void TBDisplay::ColorBar()
 {
+   TEveRGBAPalette *pal = new TEveRGBAPalette(0, 10);
+   pal->SetupColorArray();
    auto po = new TEveRGBAPaletteOverlay(pal, 0.55, 0.1, 0.4, 0.05);
    auto v  = gEve->GetDefaultGLViewer();
    v->AddOverlayElement(po);
