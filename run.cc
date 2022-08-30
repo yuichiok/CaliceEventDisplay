@@ -37,13 +37,30 @@ void run(int set_ene = 10, string particle = "e"){
 
 	TEveManager::Create();
 
-	// TEveGeoShape *SiWECAL = new TEveGeoShape;
+/*
+	TEveGeoShape *SiWECAL = new TEveGeoShape;
 	// SiWECAL->SetShape(new TGeoBBox(1.760000000e+02, 1.760000000e+02, 2.850000000e+02)); // dx, dy, dz
-	// SiWECAL->SetNSegments(100); // number of vertices
-	// SiWECAL->SetMainColor(kGreen);
-	// SiWECAL->SetMainAlpha(0.2);
-	// SiWECAL->RefMainTrans().SetPos(0, 0, 0); // set position
-	// gEve->AddGlobalElement(SiWECAL);
+	SiWECAL->SetShape(new TGeoBBox(0.950000000e+02, 0.950000000e+02, 2.850000000e+02/2)); // dx, dy, dz
+	SiWECAL->SetNSegments(100); // number of vertices
+	SiWECAL->SetMainColor(kGreen);
+	SiWECAL->SetMainAlpha(0.2);
+	SiWECAL->RefMainTrans().SetPos(0, 0, 0); // set position
+	gEve->AddGlobalElement(SiWECAL);
+*/
+
+	const int nslabs = 15;
+	TEveGeoShape *layer[nslabs];
+	for(int i=0; i<nslabs; i++){
+		layer[i] = new TEveGeoShape;
+		layer[i]->SetShape(new TGeoBBox(0.95e+02, 0.95e+02, 0.5)); // dx, dy, dz
+		layer[i]->SetNSegments(100); // number of vertices
+		layer[i]->SetMainColor(kGreen);
+		layer[i]->SetMainAlpha(0.2);
+		layer[i]->RefMainTrans().SetPos(0, 0, 0.5+i*15.0); // set position
+		gEve->AddGlobalElement(layer[i]);
+	}
+
+
 
 	gStyle->SetOptStat(0);
 
