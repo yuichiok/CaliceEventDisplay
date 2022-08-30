@@ -36,21 +36,22 @@ public :
    Int_t           nhit_len;
    Float_t         sum_energy;
    Float_t         sum_energy_lg;
-   Int_t           hit_slab[9999];   //[nhit_len]
-   Int_t           hit_chip[9999];   //[nhit_len]
-   Int_t           hit_chan[9999];   //[nhit_len]
-   Int_t           hit_sca[9999];   //[nhit_len]
-   Float_t         hit_x[9999];   //[nhit_len]
-   Float_t         hit_y[9999];   //[nhit_len]
-   Float_t         hit_z[9999];   //[nhit_len]
-   Int_t           hit_adc_high[9999];   //[nhit_len]
-   Int_t           hit_adc_low[9999];   //[nhit_len]
-   Float_t         hit_energy[9999];   //[nhit_len]
-   Float_t         hit_energy_lg[9999];   //[nhit_len]
-   Int_t           hit_n_scas_filled[9999];   //[nhit_len]
-   Int_t           hit_isHit[9999];   //[nhit_len]
-   Int_t           hit_isMasked[9999];   //[nhit_len]
-   Int_t           hit_isCommissioned[9999];   //[nhit_len]
+   vector<int>     *hit_slab;
+   vector<int>     *hit_chip;
+   vector<int>     *hit_chan;
+   vector<int>     *hit_sca;
+   vector<int>     *hit_adc_high;
+   vector<int>     *hit_adc_low;
+   vector<int>     *hit_n_scas_filled;
+   vector<int>     *hit_isHit;
+   vector<int>     *hit_isMasked;
+   vector<int>     *hit_isCommissioned;
+   vector<float>   *hit_energy;
+   vector<float>   *hit_energy_w;
+   vector<float>   *hit_energy_lg;
+   vector<float>   *hit_x;
+   vector<float>   *hit_y;
+   vector<float>   *hit_z;
 
    // List of branches
    TBranch        *b_event;   //!
@@ -71,17 +72,18 @@ public :
    TBranch        *b_hit_chip;   //!
    TBranch        *b_hit_chan;   //!
    TBranch        *b_hit_sca;   //!
-   TBranch        *b_hit_x;   //!
-   TBranch        *b_hit_y;   //!
-   TBranch        *b_hit_z;   //!
    TBranch        *b_hit_adc_high;   //!
    TBranch        *b_hit_adc_low;   //!
-   TBranch        *b_hit_energy;   //!
-   TBranch        *b_hit_energy_lg;   //!
    TBranch        *b_hit_n_scas_filled;   //!
    TBranch        *b_hit_isHit;   //!
    TBranch        *b_hit_isMasked;   //!
    TBranch        *b_hit_isCommissioned;   //!
+   TBranch        *b_hit_energy;   //!
+   TBranch        *b_hit_energy_w;   //!
+   TBranch        *b_hit_energy_lg;   //!
+   TBranch        *b_hit_x;   //!
+   TBranch        *b_hit_y;   //!
+   TBranch        *b_hit_z;   //!
 
    TBDisplay(TString filein_s);
    TBDisplay(TList *f=0);
@@ -188,11 +190,29 @@ void TBDisplay::Init(TTree *tree)
    // Init() will be called many times when running on PROOF
    // (once per file to be processed).
 
+   // Set object pointer
+   hit_slab = 0;
+   hit_chip = 0;
+   hit_chan = 0;
+   hit_sca = 0;
+   hit_adc_high = 0;
+   hit_adc_low = 0;
+   hit_n_scas_filled = 0;
+   hit_isHit = 0;
+   hit_isMasked = 0;
+   hit_isCommissioned = 0;
+   hit_energy = 0;
+   hit_energy_w = 0;
+   hit_energy_lg = 0;
+   hit_x = 0;
+   hit_y = 0;
+   hit_z = 0;
    // Set branch addresses and branch pointers
    if (!tree) return;
-   // fChain = tree;
+   fChain = tree;
    fCurrent = -1;
    fChain->SetMakeClass(1);
+
 
    fChain->SetBranchAddress("event", &event, &b_event);
    fChain->SetBranchAddress("spill", &spill, &b_spill);
@@ -208,21 +228,22 @@ void TBDisplay::Init(TTree *tree)
    fChain->SetBranchAddress("nhit_len", &nhit_len, &b_nhit_len);
    fChain->SetBranchAddress("sum_energy", &sum_energy, &b_sum_energy);
    fChain->SetBranchAddress("sum_energy_lg", &sum_energy_lg, &b_sum_energy_lg);
-   fChain->SetBranchAddress("hit_slab", hit_slab, &b_hit_slab);
-   fChain->SetBranchAddress("hit_chip", hit_chip, &b_hit_chip);
-   fChain->SetBranchAddress("hit_chan", hit_chan, &b_hit_chan);
-   fChain->SetBranchAddress("hit_sca", hit_sca, &b_hit_sca);
-   fChain->SetBranchAddress("hit_x", hit_x, &b_hit_x);
-   fChain->SetBranchAddress("hit_y", hit_y, &b_hit_y);
-   fChain->SetBranchAddress("hit_z", hit_z, &b_hit_z);
-   fChain->SetBranchAddress("hit_adc_high", hit_adc_high, &b_hit_adc_high);
-   fChain->SetBranchAddress("hit_adc_low", hit_adc_low, &b_hit_adc_low);
-   fChain->SetBranchAddress("hit_energy", hit_energy, &b_hit_energy);
-   fChain->SetBranchAddress("hit_energy_lg", hit_energy_lg, &b_hit_energy_lg);
-   fChain->SetBranchAddress("hit_n_scas_filled", hit_n_scas_filled, &b_hit_n_scas_filled);
-   fChain->SetBranchAddress("hit_isHit", hit_isHit, &b_hit_isHit);
-   fChain->SetBranchAddress("hit_isMasked", hit_isMasked, &b_hit_isMasked);
-   fChain->SetBranchAddress("hit_isCommissioned", hit_isCommissioned, &b_hit_isCommissioned);
+   fChain->SetBranchAddress("hit_slab", &hit_slab, &b_hit_slab);
+   fChain->SetBranchAddress("hit_chip", &hit_chip, &b_hit_chip);
+   fChain->SetBranchAddress("hit_chan", &hit_chan, &b_hit_chan);
+   fChain->SetBranchAddress("hit_sca", &hit_sca, &b_hit_sca);
+   fChain->SetBranchAddress("hit_adc_high", &hit_adc_high, &b_hit_adc_high);
+   fChain->SetBranchAddress("hit_adc_low", &hit_adc_low, &b_hit_adc_low);
+   fChain->SetBranchAddress("hit_n_scas_filled", &hit_n_scas_filled, &b_hit_n_scas_filled);
+   fChain->SetBranchAddress("hit_isHit", &hit_isHit, &b_hit_isHit);
+   fChain->SetBranchAddress("hit_isMasked", &hit_isMasked, &b_hit_isMasked);
+   fChain->SetBranchAddress("hit_isCommissioned", &hit_isCommissioned, &b_hit_isCommissioned);
+   fChain->SetBranchAddress("hit_energy", &hit_energy, &b_hit_energy);
+   fChain->SetBranchAddress("hit_energy_w", &hit_energy_w, &b_hit_energy_w);
+   fChain->SetBranchAddress("hit_energy_lg", &hit_energy_lg, &b_hit_energy_lg);
+   fChain->SetBranchAddress("hit_x", &hit_x, &b_hit_x);
+   fChain->SetBranchAddress("hit_y", &hit_y, &b_hit_y);
+   fChain->SetBranchAddress("hit_z", &hit_z, &b_hit_z);
    Notify();
 }
 

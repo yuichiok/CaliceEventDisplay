@@ -134,21 +134,21 @@ void TBDisplay::LoadHits(TEvePointSet*& ps, int i)
    ps->SetMarkerStyle(54);
    ps->IncDenyDestroy();
 
-   ps->SetNextPoint(hit_x[i],hit_y[i],hit_z[i]);
+   ps->SetNextPoint(hit_x->at(i),hit_y->at(i),hit_z->at(i));
    // ps->SetMainColor(TColor::GetColorPalette
-   //                  (hit_adc_high[i]));
+   //                  (hit_adc_high->at(i)));
    ps->SetMainColor(TColor::GetColorPalette
-                    (hit_energy[i]));
-   if(hit_adc_high[i] < hit_energy[i]) ps->SetMainColor(kRed);
-   // if(hit_energy[i] > 700) ps->SetMainColor(kRed);
+                    (hit_energy->at(i)));
+   if(hit_adc_high->at(i) < hit_energy->at(i)) ps->SetMainColor(kRed);
+   // if(hit_energy->at(i) > 700) ps->SetMainColor(kRed);
    // ps->SetMainColor(TColor::GetColorPalette
-   //                  (hit_energy[i]));
+   //                  (hit_energy->at(i)));
    ps->SetPointId(new TNamed(Form("Point %d", i), ""));
    ps->SetTitle(TString::Format("hit_adc_high=%i\n hit_energy=%f\n hit_isHit=%i\n (%i,%i,%i,%i)",
-                                 hit_adc_high[i],
-                                 hit_energy[i],
-                                 hit_isHit[i],
-                                 hit_slab[i], hit_chip[i], hit_chan[i], hit_sca[i]));
+                                 hit_adc_high->at(i),
+                                 hit_energy->at(i),
+                                 hit_isHit->at(i),
+                                 hit_slab->at(i), hit_chip->at(i), hit_chan->at(i), hit_sca->at(i)));
 
    gEve->AddElement(ps);
 }
@@ -162,15 +162,15 @@ void TBDisplay::LoadHits_Box(TEveBoxSet*& bs, int i)
 
    bs->Reset(TEveBoxSet::kBT_AABox, kFALSE, 64);
 
-   bs->AddBox(hit_x[i], hit_y[i], hit_z[i],
+   bs->AddBox(hit_x->at(i), hit_y->at(i), hit_z->at(i),
                5, 5, 0.5);
-   bs->DigitValue(hit_energy[i]);
+   bs->DigitValue(hit_energy->at(i));
 
-   bs->SetName(TString::Format("hit_adc_high=%i\n hit_energy=%f\n hit_isHit=%i\n (%i,%i,%i,%i)",
-                                 hit_adc_high[i],
-                                 hit_energy[i],
-                                 hit_isHit[i],
-                                 hit_slab[i], hit_chip[i], hit_chan[i], hit_sca[i]));
+   bs->SetName(TString::Format("hit_adc_high=%i\n hit_energy=%f\n hit_isHit=%i\n (%f,%f,%f)",
+                                 hit_adc_high->at(i),
+                                 hit_energy->at(i),
+                                 hit_isHit->at(i),
+                                 hit_x->at(i), hit_y->at(i), hit_z->at(i)));
 
 
    bs->RefitPlex();
@@ -214,7 +214,7 @@ void TBDisplay::Debug(bool debug=false, Long64_t entry=0)
    for (int ihit = 0; ihit < nhit_len; ++ihit)
    {
 
-      cout << hit_sca[ihit] << " " ;
+      cout << hit_sca->at(ihit) << " " ;
 
    }
 
