@@ -14,7 +14,7 @@ In this program, you can
    - Currently make coincidence of `nhit_slab >= 13`.
  - Access each hit information
    - Hover curser over the hit marker. This gives you information on those hits.
-   - Currently returns `hit_adc_high`, `hit_energy`, `hit_isHit`, and (`hit_x`,`hit_y`,`hit_z`,`hit_sca`)
+   - Currently returns `hit_adc_high`, `hit_energy`, `hit_isHit`, and (`hit_slab`,`hit_chip`,`hit_ch`,`hit_sca`)
 
      ![Hit Info](img/hitinfo.png?raw=true "Title")
      
