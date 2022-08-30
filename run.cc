@@ -9,26 +9,9 @@ TBDisplay *gDisplay = 0;
 
 void make_gui();
 
-void run(int set_ene = 10, string particle = "e"){
+void run(string str_input = "default.root", string particle = "e"){
 
-	// TString name = particle + TString(to_string(set_ene));
-	string name = particle + "." + to_string(set_ene);
-	cout << name << endl;
-
-	std::map<std::string, std::string> run_list {
-		{"e.10", "320"},
-		{"e.20", "378"},
-		{"e.40", "375"},
-		{"e.60", "372"},
-		{"e.80", "367"},
-		{"e.100", "365"},
-		{"e.150", "355"},
-	};
-
-	TString filein = "default";
-	string fileinpath = "../../CaliceAnalysis/data/reco/raw_siwecal_90";
-	filein = fileinpath + run_list[name] + "/full_run.root";
-
+	TString filein = str_input;
 	cout << "Input: " << filein << endl; 
 
 	gDisplay = new TBDisplay(filein);
@@ -36,17 +19,6 @@ void run(int set_ene = 10, string particle = "e"){
 	TFile::SetCacheFileDir(".");
 
 	TEveManager::Create();
-
-/*
-	TEveGeoShape *SiWECAL = new TEveGeoShape;
-	// SiWECAL->SetShape(new TGeoBBox(1.760000000e+02, 1.760000000e+02, 2.850000000e+02)); // dx, dy, dz
-	SiWECAL->SetShape(new TGeoBBox(0.950000000e+02, 0.950000000e+02, 2.850000000e+02/2)); // dx, dy, dz
-	SiWECAL->SetNSegments(100); // number of vertices
-	SiWECAL->SetMainColor(kGreen);
-	SiWECAL->SetMainAlpha(0.2);
-	SiWECAL->RefMainTrans().SetPos(0, 0, 0); // set position
-	gEve->AddGlobalElement(SiWECAL);
-*/
 
 	const int nslabs = 15;
 	TEveGeoShape *layer[nslabs];
@@ -59,8 +31,6 @@ void run(int set_ene = 10, string particle = "e"){
 		layer[i]->RefMainTrans().SetPos(0, 0, 0.5+i*15.0); // set position
 		gEve->AddGlobalElement(layer[i]);
 	}
-
-
 
 	gStyle->SetOptStat(0);
 
@@ -77,8 +47,6 @@ void run(int set_ene = 10, string particle = "e"){
 	gDisplay->GotoEvent(0);
 
 	gEve->Redraw3D(kTRUE); // Reset camera after the first event has been shown.
-
-	// gDisplay->Display();
 
 	ROOT::Math::MinimizerOptions::SetDefaultMaxFunctionCalls( 200 );
 
