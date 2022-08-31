@@ -3,7 +3,7 @@
 #include "TApplication.h"
 
 #include "src/TBDisplay.cc"
-// #include "MultiView.C"
+#include "include/MultiView.hh"
 
 TBDisplay *gDisplay = 0;
 
@@ -37,17 +37,6 @@ void run(int set_ene = 10, string particle = "e"){
 
 	TEveManager::Create();
 
-/*
-	TEveGeoShape *SiWECAL = new TEveGeoShape;
-	// SiWECAL->SetShape(new TGeoBBox(1.760000000e+02, 1.760000000e+02, 2.850000000e+02)); // dx, dy, dz
-	SiWECAL->SetShape(new TGeoBBox(0.950000000e+02, 0.950000000e+02, 2.850000000e+02/2)); // dx, dy, dz
-	SiWECAL->SetNSegments(100); // number of vertices
-	SiWECAL->SetMainColor(kGreen);
-	SiWECAL->SetMainAlpha(0.2);
-	SiWECAL->RefMainTrans().SetPos(0, 0, 0); // set position
-	gEve->AddGlobalElement(SiWECAL);
-*/
-
 	const int nslabs = 15;
 	TEveGeoShape *layer[nslabs];
 	for(int i=0; i<nslabs; i++){
@@ -60,9 +49,12 @@ void run(int set_ene = 10, string particle = "e"){
 		gEve->AddGlobalElement(layer[i]);
 	}
 
-
-
 	gStyle->SetOptStat(0);
+
+	gDisplay->MultiDisplay(layer[0]);
+
+   // Set GLViewer Style
+   //=====================
 
 	TGLViewer *tglv = gEve->GetDefaultGLViewer();
 	tglv->SetGuideState(TGLUtil::kAxesEdge, kTRUE, kFALSE, 0);
@@ -78,7 +70,6 @@ void run(int set_ene = 10, string particle = "e"){
 
 	gEve->Redraw3D(kTRUE); // Reset camera after the first event has been shown.
 
-	// gDisplay->Display();
 
 	ROOT::Math::MinimizerOptions::SetDefaultMaxFunctionCalls( 200 );
 

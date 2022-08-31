@@ -11,6 +11,7 @@
 #include <TROOT.h>
 #include <TChain.h>
 #include <TFile.h>
+#include "MultiView.hh"
 
 // Header file for the classes stored in the TTree if any.
 
@@ -90,20 +91,28 @@ public :
    virtual Int_t    GetEntry(Long64_t entry);
    virtual Long64_t LoadTree(Long64_t entry);
    virtual void     Init(TTree *tree);
-   virtual void     Display();
    virtual void     Debug(bool debug, Long64_t entry);
    virtual Bool_t   Notify();
    virtual void     Show(Long64_t entry = -1);
 
+   // Event Control
    virtual void     Next();
    virtual void     Prev();
    virtual void     GoTo();
    virtual void     DropEvent();
    virtual Bool_t   GotoEvent(Int_t ev);
+
+   // Graphics
+   virtual void     MultiDisplay(TEveElement* gentle_geom);
+   virtual void     ProjectView();
    virtual void     MakeViewerScene(TEveWindowSlot* slot, TEveViewer*& v, TEveScene*& s);
+
+   // Hit Info
    virtual void     LoadHits(TEvePointSet*& ps,int i);
    virtual void     LoadHits_Box(TEveBoxSet*& bs,int i);
    virtual void     ColorBar();
+
+   MultiView* gMultiView = 0;
 
    TEvePointSet  *fHits;
    TEveBoxSet  *fHits_Box;

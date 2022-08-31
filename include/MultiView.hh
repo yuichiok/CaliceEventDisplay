@@ -70,7 +70,8 @@ struct MultiView {
          fRPhiGeomScene->AddElement(a);
       }
 
-      fRhoZMgr = new TEveProjectionManager(TEveProjection::kPT_RhoZ);
+      // fRhoZMgr = new TEveProjectionManager(TEveProjection::kPT_RhoZ);
+      fRhoZMgr = new TEveProjectionManager(TEveProjection::kPT_YZ);
       gEve->AddToListTree(fRhoZMgr, kFALSE);
       {
          TEveProjectionAxes* a = new TEveProjectionAxes(fRhoZMgr);
@@ -105,13 +106,13 @@ struct MultiView {
       pack->NewSlot()->MakeCurrent();
       fRPhiView = gEve->SpawnNewViewer("RPhi View", "");
       fRPhiView->GetGLViewer()->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
-      fRPhiView->AddScene(fRPhiGeomScene);
+      // fRPhiView->AddScene(fRPhiGeomScene);
       fRPhiView->AddScene(fRPhiEventScene);
 
       pack->NewSlot()->MakeCurrent();
       fRhoZView = gEve->SpawnNewViewer("RhoZ View", "");
       fRhoZView->GetGLViewer()->SetCurrentCamera(TGLViewer::kCameraOrthoXOY);
-      fRhoZView->AddScene(fRhoZGeomScene);
+      // fRhoZView->AddScene(fRhoZGeomScene);
       fRhoZView->AddScene(fRhoZEventScene);
    }
 

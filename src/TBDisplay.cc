@@ -28,8 +28,6 @@
 #include <map>
 
 #include "../include/TBDisplay.hh"
-#include "../include/MultiView.hh"
-MultiView* gMultiView = 0;
 
 using std::cout;
 using std::endl;
@@ -107,6 +105,9 @@ Bool_t TBDisplay::GotoEvent(Int_t ev)
 
    // Add overlayed color bar
    ColorBar();
+
+   // MultiView
+   ProjectView();
 
    gEve->Redraw3D(kFALSE, kTRUE);
 
@@ -195,14 +196,28 @@ void TBDisplay::ColorBar()
    v->AddOverlayElement(po);
 }
 
-void TBDisplay::Display()
+void TBDisplay::MultiDisplay(TEveElement* gentle_geom)
 {
-   Long64_t nbytes = 0, nb = 0;
-   int ievent = 0;
-   int cnt_event = 0;
+   gMultiView = new MultiView;
+   gMultiView->f3DView->GetGLViewer()->SetStyle(TGLRnrCtx::kOutline);
 
-   cout << "Done.\n";
+   gMultiView->SetDepth(-10);
+   gMultiView->ImportGeomRPhi(gentle_geom);
+   gMultiView->ImportGeomRhoZ(gentle_geom);
+   gMultiView->SetDepth(0);
 
+}
+
+void TBDisplay::ProjectView()
+{
+   // Fill projected views.
+   auto top = gEve->GetCurrentEvent();
+
+   gMultiView->DestroyEventRPhi();
+   gMultiView->ImportEventRPhi(top);
+
+   gMultiView->DestroyEventRhoZ();
+   gMultiView->ImportEventRhoZ(top);
 }
 
 void TBDisplay::Debug(bool debug=false, Long64_t entry=0)
