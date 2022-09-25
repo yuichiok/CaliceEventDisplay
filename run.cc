@@ -4,13 +4,16 @@
 
 #include "src/TBDisplay.cc"
 #include "include/MultiView.hh"
+#include "src/FileSelector.cc"
 
 TBDisplay *gDisplay = 0;
 
 void make_gui();
 
-void run(int set_ene = 10, string particle = "e"){
+// void run(Int_t set_ene = 10, TString particle = "e-"){
+void run(TString setting = "reco e- 10"){
 
+/*
 	// TString name = particle + TString(to_string(set_ene));
 	string name = particle + "." + to_string(set_ene);
 	cout << name << endl;
@@ -28,6 +31,10 @@ void run(int set_ene = 10, string particle = "e"){
 	TString filein = "default";
 	string fileinpath = "../../CaliceAnalysis/data/reco/raw_siwecal_90";
 	filein = fileinpath + run_list[name] + "/full_run.root";
+*/
+
+   FileSelector fs(setting);
+   TString filein = fs.GetRunName_with_path();
 
 	cout << "Input: " << filein << endl; 
 
