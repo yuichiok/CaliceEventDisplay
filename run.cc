@@ -13,26 +13,6 @@ void make_gui();
 // void run(Int_t set_ene = 10, TString particle = "e-"){
 void run(TString setting = "reco e- 10"){
 
-/*
-	// TString name = particle + TString(to_string(set_ene));
-	string name = particle + "." + to_string(set_ene);
-	cout << name << endl;
-
-	std::map<std::string, std::string> run_list {
-		{"e.10", "320"},
-		{"e.20", "378"},
-		{"e.40", "375"},
-		{"e.60", "372"},
-		{"e.80", "367"},
-		{"e.100", "365"},
-		{"e.150", "355"},
-	};
-
-	TString filein = "default";
-	string fileinpath = "../../CaliceAnalysis/data/reco/raw_siwecal_90";
-	filein = fileinpath + run_list[name] + "/full_run.root";
-*/
-
    FileSelector fs(setting);
    TString filein = fs.GetRunName_with_path();
 
@@ -58,7 +38,7 @@ void run(TString setting = "reco e- 10"){
 
 	gStyle->SetOptStat(0);
 
-	gDisplay->MultiDisplay(layer[0]);
+	// gDisplay->MultiDisplay(layer[0]);
 
    // Set GLViewer Style
    //=====================

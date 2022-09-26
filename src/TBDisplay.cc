@@ -107,7 +107,7 @@ Bool_t TBDisplay::GotoEvent(Int_t ev)
    ColorBar();
 
    // MultiView
-   ProjectView();
+   // ProjectView();
 
    gEve->Redraw3D(kFALSE, kTRUE);
 
