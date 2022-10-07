@@ -95,9 +95,18 @@ Bool_t TBDisplay::GotoEvent(Int_t ev)
 
    nb = fChain->GetEntry(evlist->GetEntry(ev));
 
+   // 2D Hit Maps
+   TH2F *hitmap[nslabs];
+   for (int islab=0; islab<nslabs; islab++){
+      TString h2name = TString::Format("hitmap layer%i",islab);
+      hitmap[islab] = new TH2F(h2name,h2name,32,-90,90,32,-90,90);
+   }
+
    // Load event data into visualization structures.
    for (int ihit=0; ihit<nhit_len; ihit++){
       
+      hitmap[hit_slab[ihit]]->Fill(hit_x[ihit], hit_y[ihit],hit_energy[ihit]);
+
       LoadHits_Box(fHits_Box,ihit);
 
    } // hit loop
@@ -106,11 +115,22 @@ Bool_t TBDisplay::GotoEvent(Int_t ev)
    ColorBar();
 
    // Fit
+   /*
    TGraph2D *gr = new TGraph2D();
    FitCoG(gr);
    gr->SetTitle(";x;z;y");
    gr->GetXaxis()->SetRangeUser(-95,95);
    gr->Draw("p0");
+   */
+
+  // Hit Map
+  TCanvas *c0 = new TCanvas("c0","c0",800,800);
+  c0->Divide(4,4);
+  for (int islab=0; islab<nslabs; islab++){
+   c0->cd(islab+1);
+   hitmap[islab]->Draw("col");
+  }
+  c0->Draw();
 
 
 

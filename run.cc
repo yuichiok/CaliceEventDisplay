@@ -10,7 +10,6 @@ TBDisplay *gDisplay = 0;
 
 void make_gui();
 
-// void run(Int_t set_ene = 10, TString particle = "e-"){
 void run(TString setting = "reco e- 10"){
 
    FileSelector fs(setting);
