@@ -28,6 +28,7 @@
 #include <map>
 
 #include "../include/TBDisplay.hh"
+#include "../include/Fit3D.hh"
 
 using std::cout;
 using std::endl;
@@ -84,7 +85,6 @@ Bool_t TBDisplay::GotoEvent(Int_t ev)
    cout << "Going to " << ev << "..." << endl;
    cout << endl;
 
-   TGraph2D *gr = new TGraph2D();
    fCurEv = ev;
 
    Long64_t ientry = LoadTree( evlist->GetEntry(ev) );
@@ -98,7 +98,6 @@ Bool_t TBDisplay::GotoEvent(Int_t ev)
    // Load event data into visualization structures.
    for (int ihit=0; ihit<nhit_len; ihit++){
       
-      // LoadHits(fHits,ihit);
       LoadHits_Box(fHits_Box,ihit);
 
    } // hit loop
@@ -106,12 +105,66 @@ Bool_t TBDisplay::GotoEvent(Int_t ev)
    // Add overlayed color bar
    ColorBar();
 
+   // Fit
+   TGraph2D *gr = new TGraph2D();
+   FitCoG(gr);
+   gr->SetTitle(";x;z;y");
+   gr->GetXaxis()->SetRangeUser(-95,95);
+   gr->Draw("p0");
+
+
+
+
+
+
    // MultiView
    // ProjectView();
 
    gEve->Redraw3D(kFALSE, kTRUE);
 
    return kTRUE;
+}
+
+void TBDisplay::FitCoG(TGraph2D *gr)
+{
+   Float_t Xcm[nslabs] = {0};
+   Float_t Ycm[nslabs] = {0};
+   Float_t Zcm[nslabs] = {0};
+   Float_t Wsum[nslabs] = {0};
+
+   // Load event data into visualization structures.
+   for (int ihit=0; ihit<nhit_len; ihit++){
+      
+      for (int islab = 0; islab < nslabs; islab++)
+      {
+         if (hit_slab[ihit]==islab)
+         {
+            Xcm[islab]  += hit_x[ihit] * hit_energy[ihit];
+            Ycm[islab]  += hit_y[ihit] * hit_energy[ihit];
+            // Xcm[islab]  += hit_x[ihit] * hit_adc_high[ihit];
+            // Ycm[islab]  += hit_y[ihit] * hit_adc_high[ihit];
+            Zcm[islab]  =  hit_z[ihit];
+            Wsum[islab] += hit_energy[ihit];
+            // Wsum[islab] += hit_adc_high[ihit];
+         }
+
+      } // match slab
+
+   } // hit loop
+
+   Int_t N = 0;
+   for (int islab = 0; islab < nslabs; islab++)
+   {
+      if(Xcm[islab]==0 || Ycm[islab]==0) continue;
+
+      Xcm[islab] = Xcm[islab] / Wsum[islab];
+      Ycm[islab] = Ycm[islab] / Wsum[islab];
+
+      // gr->SetPoint(N,Xcm[islab],Ycm[islab],Zcm[islab]);
+      gr->SetPoint(N,Xcm[islab],Zcm[islab],Ycm[islab]);
+      N++;
+
+   } // match slab
 }
 
 //______________________________________________________________________________
