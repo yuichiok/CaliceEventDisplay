@@ -41,29 +41,29 @@ const float MARKER_SIZE = 3.5;
 
 void TBDisplay::Next()
 {
-   GotoEvent(fCurEv + 1);
+  GotoEvent(fCurEv + 1);
 }
 
 void TBDisplay::Prev()
 {
-   GotoEvent(fCurEv - 1);
+  GotoEvent(fCurEv - 1);
 }
 
 void TBDisplay::GoTo() {
 
-	int goto_eventNum;
-	cout << "Go To: ";
-	cin >> goto_eventNum;
-	cout << endl;
+  int goto_eventNum;
+  cout << "Go To: ";
+  cin >> goto_eventNum;
+  cout << endl;
 
-   GotoEvent(goto_eventNum);
+  GotoEvent(goto_eventNum);
 
 }
 
 void TBDisplay::DropEvent()
 {   
-   gEve->GetViewers()->DeleteAnnotations();
-   gEve->GetCurrentEvent()->DestroyElements();
+  gEve->GetViewers()->DeleteAnnotations();
+  gEve->GetCurrentEvent()->DestroyElements();
 }
 
 void TBDisplay::ClearObjects()
@@ -83,57 +83,57 @@ void TBDisplay::ClearObjects()
 
 Bool_t TBDisplay::GotoEvent(Int_t ev)
 {
-   Long64_t nb = 0;
-   if (fChain == 0) return kFALSE;
+  Long64_t nb = 0;
+  if (fChain == 0) return kFALSE;
 
-   Int_t nentries = fMaxEv;
+  Int_t nentries = fMaxEv;
 
-   if (ev < 0 || ev >= nentries)
-   {
-      Warning("GotoEvent", "Invalid event id %d.", ev);
-      return kFALSE;
-   }
+  if (ev < 0 || ev >= nentries)
+  {
+    Warning("GotoEvent", "Invalid event id %d.", ev);
+    return kFALSE;
+  }
 
-   DropEvent();
-   ClearObjects();
+  DropEvent();
+  ClearObjects();
 
-   cout << endl;
-   cout << "Going to " << ev << "..." << endl;
-   cout << endl;
+  cout << endl;
+  cout << "Going to " << ev << "..." << endl;
+  cout << endl;
 
-   fCurEv = ev;
+  fCurEv = ev;
 
-   Long64_t ientry = LoadTree( evlist->GetEntry(ev) );
-   if (ientry == 0) {
-      Warning("GotoEvent", "Entry is empty");
-      return kFALSE;
-   }
+  Long64_t ientry = LoadTree( evlist->GetEntry(ev) );
+  if (ientry == 0) {
+    Warning("GotoEvent", "Entry is empty");
+    return kFALSE;
+  }
 
-   nb = fChain->GetEntry(evlist->GetEntry(ev));
+  nb = fChain->GetEntry(evlist->GetEntry(ev));
 
-   // 2D Hit Maps
-   TH2F *hitmap[nslabs];
-   for (int islab=0; islab<nslabs; islab++){
-      TString h2name = TString::Format("hitmap layer%i",islab);
-      hitmap[islab] = new TH2F(h2name,h2name,32,-90,90,32,-90,90);
-   }
+  // 2D Hit Maps
+  TH2F *hitmap[nslabs];
+  for (int islab=0; islab<nslabs; islab++){
+    TString h2name = TString::Format("hitmap layer%i",islab);
+    hitmap[islab] = new TH2F(h2name,h2name,32,-90,90,32,-90,90);
+  }
 
-   // Load event data into visualization structures.
-   for (int ihit=0; ihit<nhit_len; ihit++){
-      
-      hitmap[hit_slab[ihit]]->Fill(hit_x[ihit], hit_y[ihit],hit_energy[ihit]);
+  // Load event data into visualization structures.
+  for (int ihit=0; ihit<nhit_len; ihit++){
+    
+    hitmap[hit_slab[ihit]]->Fill(hit_x[ihit], hit_y[ihit],hit_energy[ihit]);
 
-      LoadHits_Box(fHits_Box,ihit);
+    LoadHits_Box(fHits_Box,ihit);
 
-   } // hit loop
+  } // hit loop
 
-   // Add overlayed color bar
-   ColorBar();
+  // Add overlayed color bar
+    ColorBar();
 
-   // Fit
-  TCanvas *c1 = new TCanvas("c1","c1",800,800);
+  // Fit
+  TCanvas  *c1 = new TCanvas("c1","c1",800,800);
   TGraph2D *gr = new TGraph2D();
-  FitCoG(gr);
+  FindCoG(gr);
   gr->SetTitle(";x;z;y");
   gr->GetXaxis()->SetRangeUser(-95,95);
   gr->Draw("p0");
@@ -144,8 +144,8 @@ Bool_t TBDisplay::GotoEvent(Int_t ev)
   TCanvas *c0 = new TCanvas("c0","c0",800,800);
   c0->Divide(4,4);
   for (int islab=0; islab<nslabs; islab++){
-   c0->cd(islab+1);
-   hitmap[islab]->Draw("col");
+    c0->cd(islab+1);
+    hitmap[islab]->Draw("col");
   }
   c0->Draw();
 
@@ -154,175 +154,176 @@ Bool_t TBDisplay::GotoEvent(Int_t ev)
 
 
 
-   // MultiView
-   // ProjectView();
+  // MultiView
+  // ProjectView();
 
-   gEve->Redraw3D(kFALSE, kTRUE);
+  gEve->Redraw3D(kFALSE, kTRUE);
 
-   return kTRUE;
+  return kTRUE;
 }
 
-void TBDisplay::FitCoG(TGraph2D *gr)
+void TBDisplay::FindCoG(TGraph2D *gr)
 {
-   Float_t Xcm[nslabs] = {0};
-   Float_t Ycm[nslabs] = {0};
-   Float_t Zcm[nslabs] = {0};
-   Float_t Wsum[nslabs] = {0};
+  Float_t Xcm[nslabs] = {0};
+  Float_t Ycm[nslabs] = {0};
+  Float_t Zcm[nslabs] = {0};
+  Float_t Wsum[nslabs] = {0};
 
-   // Load event data into visualization structures.
-   for (int ihit=0; ihit<nhit_len; ihit++){
-      
-      for (int islab = 0; islab < nslabs; islab++)
-      {
-         if (hit_slab[ihit]==islab)
-         {
-            Xcm[islab]  += hit_x[ihit] * hit_energy[ihit];
-            Ycm[islab]  += hit_y[ihit] * hit_energy[ihit];
-            // Xcm[islab]  += hit_x[ihit] * hit_adc_high[ihit];
-            // Ycm[islab]  += hit_y[ihit] * hit_adc_high[ihit];
-            Zcm[islab]  =  hit_z[ihit];
-            Wsum[islab] += hit_energy[ihit];
-            // Wsum[islab] += hit_adc_high[ihit];
-         }
+  // Load event data into visualization structures.
+  for (int ihit=0; ihit<nhit_len; ihit++){
+    
+    for (int islab = 0; islab < nslabs; islab++)
+    {
+        if (hit_slab[ihit]==islab)
+        {
+        // CoG based on hit energy
+          Xcm[islab]  += hit_x[ihit] * hit_energy[ihit];
+          Ycm[islab]  += hit_y[ihit] * hit_energy[ihit];
+          Wsum[islab] += hit_energy[ihit];
+        // CoG based on adc high
+          // Xcm[islab]  += hit_x[ihit] * hit_adc_high[ihit];
+          // Ycm[islab]  += hit_y[ihit] * hit_adc_high[ihit];
+          // Wsum[islab] += hit_adc_high[ihit];
 
-      } // match slab
+          Zcm[islab]  =  hit_z[ihit];
+        }
 
-   } // hit loop
+    } // match slab
 
-   Int_t N = 0;
-   for (int islab = 0; islab < nslabs; islab++)
-   {
-      if(Xcm[islab]==0 || Ycm[islab]==0) continue;
+  } // hit loop
 
-      Xcm[islab] = Xcm[islab] / Wsum[islab];
-      Ycm[islab] = Ycm[islab] / Wsum[islab];
+  Int_t N = 0;
+  for (int islab = 0; islab < nslabs; islab++)
+  {
+    if(Xcm[islab]==0 || Ycm[islab]==0) continue;
 
-      // gr->SetPoint(N,Xcm[islab],Ycm[islab],Zcm[islab]);
-      gr->SetPoint(N,Xcm[islab],Zcm[islab],Ycm[islab]);
-      N++;
+    Xcm[islab] = Xcm[islab] / Wsum[islab];
+    Ycm[islab] = Ycm[islab] / Wsum[islab];
 
-   } // match slab
+    gr->SetPoint(islab,Xcm[islab],Zcm[islab],Ycm[islab]);
+
+  } // match slab
 }
 
 //______________________________________________________________________________
 void TBDisplay::MakeViewerScene(TEveWindowSlot* slot, TEveViewer*& v, TEveScene*& s)
 {
-   // Create a scene and a viewer in the given slot.
+  // Create a scene and a viewer in the given slot.
 
-   v = new TEveViewer("Viewer");
-   v->SpawnGLViewer(gEve->GetEditor());
-   slot->ReplaceWindow(v);
-   gEve->GetViewers()->AddElement(v);
-   s = gEve->SpawnNewScene("Scene");
-   v->AddScene(s);
+  v = new TEveViewer("Viewer");
+  v->SpawnGLViewer(gEve->GetEditor());
+  slot->ReplaceWindow(v);
+  gEve->GetViewers()->AddElement(v);
+  s = gEve->SpawnNewScene("Scene");
+  v->AddScene(s);
 }
 
 void TBDisplay::LoadHits(TEvePointSet*& ps, int i)
 {
-   ps = new TEvePointSet("Hit");
-   ps->SetOwnIds(kTRUE);
-   ps->SetMarkerSize(MARKER_SIZE);
-   ps->SetMarkerStyle(54);
-   ps->IncDenyDestroy();
+  ps = new TEvePointSet("Hit");
+  ps->SetOwnIds(kTRUE);
+  ps->SetMarkerSize(MARKER_SIZE);
+  ps->SetMarkerStyle(54);
+  ps->IncDenyDestroy();
 
-   ps->SetNextPoint(hit_x[i],hit_y[i],hit_z[i]);
-   // ps->SetMainColor(TColor::GetColorPalette
-   //                  (hit_adc_high[i]));
-   ps->SetMainColor(TColor::GetColorPalette
-                    (hit_energy[i]));
-   if(hit_adc_high[i] < hit_energy[i]) ps->SetMainColor(kRed);
-   // if(hit_energy[i] > 700) ps->SetMainColor(kRed);
-   // ps->SetMainColor(TColor::GetColorPalette
-   //                  (hit_energy[i]));
-   ps->SetPointId(new TNamed(Form("Point %d", i), ""));
-   ps->SetTitle(TString::Format("hit_adc_high=%i\n hit_energy=%f\n hit_isHit=%i\n (%i,%i,%i,%i)",
-                                 hit_adc_high[i],
-                                 hit_energy[i],
-                                 hit_isHit[i],
-                                 hit_slab[i], hit_chip[i], hit_chan[i], hit_sca[i]));
+  ps->SetNextPoint(hit_x[i],hit_y[i],hit_z[i]);
+  // ps->SetMainColor(TColor::GetColorPalette
+  //                  (hit_adc_high[i]));
+  ps->SetMainColor(TColor::GetColorPalette
+                  (hit_energy[i]));
+  if(hit_adc_high[i] < hit_energy[i]) ps->SetMainColor(kRed);
+  // if(hit_energy[i] > 700) ps->SetMainColor(kRed);
+  // ps->SetMainColor(TColor::GetColorPalette
+  //                  (hit_energy[i]));
+  ps->SetPointId(new TNamed(Form("Point %d", i), ""));
+  ps->SetTitle(TString::Format("hit_adc_high=%i\n hit_energy=%f\n hit_isHit=%i\n (%i,%i,%i,%i)",
+                                hit_adc_high[i],
+                                hit_energy[i],
+                                hit_isHit[i],
+                                hit_slab[i], hit_chip[i], hit_chan[i], hit_sca[i]));
 
-   gEve->AddElement(ps);
+  gEve->AddElement(ps);
 }
 
 void TBDisplay::LoadHits_Box(TEveBoxSet*& bs, int i)
 {
-   bs = new TEveBoxSet("BoxSet");
-   TEveRGBAPalette *pal = new TEveRGBAPalette(0, 10);
-   pal->SetupColorArray();
-   bs->SetPalette(pal);
+  bs = new TEveBoxSet("BoxSet");
+  TEveRGBAPalette *pal = new TEveRGBAPalette(0, 10);
+  pal->SetupColorArray();
+  bs->SetPalette(pal);
 
-   bs->Reset(TEveBoxSet::kBT_AABox, kFALSE, 64);
+  bs->Reset(TEveBoxSet::kBT_AABox, kFALSE, 64);
 
-   bs->AddBox(hit_x[i], hit_y[i], hit_z[i],
-               5, 5, 0.5);
-   bs->DigitValue(hit_energy[i]);
+  bs->AddBox(hit_x[i], hit_y[i], hit_z[i],
+              5, 5, 0.5);
+  bs->DigitValue(hit_energy[i]);
 
-   bs->SetName(TString::Format("hit_adc_high=%i\n hit_energy=%f\n hit_isHit=%i\n (%i,%i,%i,%i)",
-                                 hit_adc_high[i],
-                                 hit_energy[i],
-                                 hit_isHit[i],
-                                 hit_slab[i], hit_chip[i], hit_chan[i], hit_sca[i]));
+  bs->SetName(TString::Format("hit_adc_high=%i\n hit_energy=%f\n hit_isHit=%i\n (%i,%i,%i,%i)",
+                                hit_adc_high[i],
+                                hit_energy[i],
+                                hit_isHit[i],
+                                hit_slab[i], hit_chip[i], hit_chan[i], hit_sca[i]));
 
 
-   bs->RefitPlex();
+  bs->RefitPlex();
 
-   TEveTrans& t = bs->RefMainTrans();
-   t.SetPos(0,0,0);
+  TEveTrans& t = bs->RefMainTrans();
+  t.SetPos(0,0,0);
 
-   // Uncomment these two lines to get internal highlight / selection.
-   bs->SetPickable(1);
-   bs->SetAlwaysSecSelect(1);
+  // Uncomment these two lines to get internal highlight / selection.
+  bs->SetPickable(1);
+  bs->SetAlwaysSecSelect(1);
 
-   gEve->AddElement(bs);
+  gEve->AddElement(bs);
 
 }
 
 void TBDisplay::ColorBar()
 {
-   TEveRGBAPalette *pal = new TEveRGBAPalette(0, 10);
-   pal->SetupColorArray();
-   auto po = new TEveRGBAPaletteOverlay(pal, 0.55, 0.1, 0.4, 0.05);
-   auto v  = gEve->GetDefaultGLViewer();
-   v->AddOverlayElement(po);
+  TEveRGBAPalette *pal = new TEveRGBAPalette(0, 10);
+  pal->SetupColorArray();
+  auto po = new TEveRGBAPaletteOverlay(pal, 0.55, 0.1, 0.4, 0.05);
+  auto v  = gEve->GetDefaultGLViewer();
+  v->AddOverlayElement(po);
 }
 
 void TBDisplay::MultiDisplay(TEveElement* gentle_geom)
 {
-   gMultiView = new MultiView;
-   gMultiView->f3DView->GetGLViewer()->SetStyle(TGLRnrCtx::kOutline);
+  gMultiView = new MultiView;
+  gMultiView->f3DView->GetGLViewer()->SetStyle(TGLRnrCtx::kOutline);
 
-   gMultiView->SetDepth(-10);
-   gMultiView->ImportGeomRPhi(gentle_geom);
-   gMultiView->ImportGeomRhoZ(gentle_geom);
-   gMultiView->SetDepth(0);
+  gMultiView->SetDepth(-10);
+  gMultiView->ImportGeomRPhi(gentle_geom);
+  gMultiView->ImportGeomRhoZ(gentle_geom);
+  gMultiView->SetDepth(0);
 
 }
 
 void TBDisplay::ProjectView()
 {
-   // Fill projected views.
-   auto top = gEve->GetCurrentEvent();
+  // Fill projected views.
+  auto top = gEve->GetCurrentEvent();
 
-   gMultiView->DestroyEventRPhi();
-   gMultiView->ImportEventRPhi(top);
+  gMultiView->DestroyEventRPhi();
+  gMultiView->ImportEventRPhi(top);
 
-   gMultiView->DestroyEventRhoZ();
-   gMultiView->ImportEventRhoZ(top);
+  gMultiView->DestroyEventRhoZ();
+  gMultiView->ImportEventRhoZ(top);
 }
 
 void TBDisplay::Debug(bool debug=false, Long64_t entry=0)
 {
 
-   if(!debug) return;
-   else if( !(entry % 10000) ) return;
+  if(!debug) return;
+  else if( !(entry % 10000) ) return;
 
-   for (int ihit = 0; ihit < nhit_len; ++ihit)
-   {
+  for (int ihit = 0; ihit < nhit_len; ++ihit)
+  {
 
-      cout << hit_sca[ihit] << " " ;
+    cout << hit_sca[ihit] << " " ;
 
-   }
+  }
 
-   cout << endl;
-   
+  cout << endl;
+  
 }

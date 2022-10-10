@@ -109,7 +109,7 @@ public :
    virtual void     MakeViewerScene(TEveWindowSlot* slot, TEveViewer*& v, TEveScene*& s);
 
    // Fitting
-   virtual void     FitCoG(TGraph2D *gr);
+   virtual void     FindCoG(TGraph2D *gr);
 
    // Hit Info
    virtual void     LoadHits(TEvePointSet*& ps,int i);
