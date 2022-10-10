@@ -100,6 +100,7 @@ public :
    virtual void     Prev();
    virtual void     GoTo();
    virtual void     DropEvent();
+   virtual void     ClearObjects();
    virtual Bool_t   GotoEvent(Int_t ev);
 
    // Graphics

@@ -66,6 +66,21 @@ void TBDisplay::DropEvent()
    gEve->GetCurrentEvent()->DestroyElements();
 }
 
+void TBDisplay::ClearObjects()
+{   
+  TSeqCollection* canvases = gROOT->GetListOfCanvases();
+  TIter next(gROOT->GetListOfCanvases());
+  while(TCanvas *c = (TCanvas*)next())
+  {
+    delete c;
+  }
+
+  for (int islab=0; islab<nslabs; islab++){
+    TString h2name = TString::Format("hitmap layer%i",islab);
+    delete gROOT->FindObject(h2name);
+  }
+}
+
 Bool_t TBDisplay::GotoEvent(Int_t ev)
 {
    Long64_t nb = 0;
@@ -80,6 +95,7 @@ Bool_t TBDisplay::GotoEvent(Int_t ev)
    }
 
    DropEvent();
+   ClearObjects();
 
    cout << endl;
    cout << "Going to " << ev << "..." << endl;
@@ -115,13 +131,14 @@ Bool_t TBDisplay::GotoEvent(Int_t ev)
    ColorBar();
 
    // Fit
-   /*
-   TGraph2D *gr = new TGraph2D();
-   FitCoG(gr);
-   gr->SetTitle(";x;z;y");
-   gr->GetXaxis()->SetRangeUser(-95,95);
-   gr->Draw("p0");
-   */
+  TCanvas *c1 = new TCanvas("c1","c1",800,800);
+  TGraph2D *gr = new TGraph2D();
+  FitCoG(gr);
+  gr->SetTitle(";x;z;y");
+  gr->GetXaxis()->SetRangeUser(-95,95);
+  gr->Draw("p0");
+  c1->Draw();
+
 
   // Hit Map
   TCanvas *c0 = new TCanvas("c0","c0",800,800);
