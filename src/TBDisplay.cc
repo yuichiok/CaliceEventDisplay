@@ -111,6 +111,11 @@ Bool_t TBDisplay::GotoEvent(Int_t ev)
 
   nb = fChain->GetEntry(evlist->GetEntry(ev));
 
+  // Profile
+  // TGraph2D *gr_profile = new TGraph2D();
+  Float_t X0s[nslabs] = {1.198630137, 2.397260274, 3.595890411, 4.794520548, 5.993150685, 7.191780822, 8.390410959, 9.589041096, 10.78767123, 12.38584475, 13.98401826, 15.58219178, 17.1803653, 18.77853881, 20.37671233};
+  Float_t E_layers[nslabs] = {0};
+
   // 2D Hit Maps
   TH2F *hitmap[nslabs];
   for (int islab=0; islab<nslabs; islab++){
@@ -121,7 +126,9 @@ Bool_t TBDisplay::GotoEvent(Int_t ev)
   // Load event data into visualization structures.
   for (int ihit=0; ihit<nhit_len; ihit++){
     
-    hitmap[hit_slab[ihit]]->Fill(hit_x[ihit], hit_y[ihit],hit_energy[ihit]);
+    E_layers[hit_slab[ihit]] += hit_energy[ihit];
+
+    hitmap[hit_slab[ihit]]->Fill(hit_x[ihit], hit_y[ihit], hit_energy[ihit]);
 
     LoadHits_Box(fHits_Box,ihit);
 
@@ -131,24 +138,28 @@ Bool_t TBDisplay::GotoEvent(Int_t ev)
     ColorBar();
 
   // Fit
-  TCanvas  *c1 = new TCanvas("c1","c1",800,800);
+  TCanvas  *c0 = new TCanvas("c0","c0",800,800);
   TGraph2D *gr = new TGraph2D();
   FindCoG(gr);
   gr->SetTitle(";x;z;y");
   gr->GetXaxis()->SetRangeUser(-95,95);
   gr->Draw("p0");
-  c1->Draw();
-
-
-  // Hit Map
-  TCanvas *c0 = new TCanvas("c0","c0",800,800);
-  c0->Divide(4,4);
-  for (int islab=0; islab<nslabs; islab++){
-    c0->cd(islab+1);
-    hitmap[islab]->Draw("col");
-  }
   c0->Draw();
 
+  // Hit Map
+  TCanvas *c1 = new TCanvas("c1","c1",800,800);
+  c1->Divide(4,4);
+  for (int islab=0; islab<nslabs; islab++){
+    c1->cd(islab+1);
+    hitmap[islab]->Draw("col");
+  }
+  c1->Draw();
+
+  // Shower Profile
+  TCanvas *c2 = new TCanvas("c2","c2",800,800);
+  TGraph *gr_profile = new TGraph(nslabs,X0s,E_layers);
+  gr_profile->Draw("AC*");
+  c2->Draw();
 
 
 
