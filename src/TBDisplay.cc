@@ -141,14 +141,6 @@ Bool_t TBDisplay::GotoEvent(Int_t ev)
   // Add overlayed color bar
     ColorBar();
 
-  // Fit
-  TCanvas  *c0 = new TCanvas("c0","c0",800,800);
-  TGraph2D *gr = new TGraph2D();
-  FindCoG(gr);
-  gr->SetTitle(";x;z;y");
-  gr->GetXaxis()->SetRangeUser(-95,95);
-  gr->Draw("p0");
-  c0->Draw();
 
   // Hit Map
   TCanvas *c1 = new TCanvas("c1","c1",800,800);
@@ -167,21 +159,41 @@ Bool_t TBDisplay::GotoEvent(Int_t ev)
 
   vector<vector<Float_t>> Mean_SD_x;
   vector<vector<Float_t>> Mean_SD_y;
-  cout << " x | y " << endl;
-  for (int i=0; i<nslabs; i++){
-    vector<Float_t> iMean_SD_x = Mean_SD(layer_hit_x[i]);
-    vector<Float_t> iMean_SD_y = Mean_SD(layer_hit_y[i]);
+  for (int islab=0; islab<nslabs; islab++){
+    vector<Float_t> iMean_SD_x = Mean_SD(islab, layer_hit_x[islab]);
+    vector<Float_t> iMean_SD_y = Mean_SD(islab, layer_hit_y[islab]);
 
-      // cout << "layer " << i << " | " << iMean_SD_x << " | " << iMean_SD_y << endl;
-      // cout << "layer " << i << " | " << iMean_SD_x[0] << " " << iMean_SD_x[1] << " | " << iMean_SD_y[0] << " " << iMean_SD_y[1] << endl;
+    // cout << "layer " << iMean_SD_x.at(0) << " | " << iMean_SD_x.at(2) << " " << iMean_SD_x.at(3) << " | " << iMean_SD_y.at(2) << " " << iMean_SD_y.at(3) << " :: " << iMean_SD_x.at(1)<< endl;
+    Mean_SD_x.push_back(iMean_SD_x);
+    Mean_SD_y.push_back(iMean_SD_y);
+  }
 
-    if(layer_hit_x[i].size()){
-      Mean_SD_x.push_back(iMean_SD_x);
-      Mean_SD_y.push_back(iMean_SD_y);
-      cout << "layer " << i << " | " << iMean_SD_x[0] << " " << iMean_SD_x[1] << " | " << iMean_SD_y[0] << " " << iMean_SD_y[1] << endl;
+
+  Int_t n_valid_slab = Mean_SD_x.size();
+  vector<Int_t> valid_slabs;
+  if(n_valid_slab){
+    for (int islab=0; islab<n_valid_slab; islab++){
+
+      Bool_t is_nhit   =  10 < Mean_SD_x.at(islab).at(1);
+      Bool_t is_sigw_x = ( 0 < Mean_SD_x.at(islab).at(3) ) && ( Mean_SD_x.at(islab).at(3) < 20 );
+      Bool_t is_sigw_y = ( 0 < Mean_SD_y.at(islab).at(3) ) && ( Mean_SD_y.at(islab).at(3) < 20 );
+
+      if( is_nhit && is_sigw_x && is_sigw_y ){
+        valid_slabs.push_back(Mean_SD_x.at(islab).at(0));
+        // cout << "layer " << Mean_SD_x.at(islab).at(0) << " | " << Mean_SD_x.at(islab).at(2) << " " << Mean_SD_x.at(islab).at(3) << " | " << Mean_SD_y.at(islab).at(2) << " " << Mean_SD_y.at(islab).at(3) << " :: " << Mean_SD_x.at(islab).at(1)<< endl;
+      }
+
     }
   }
 
+  // Fit
+  TCanvas  *c0 = new TCanvas("c0","c0",800,800);
+  TGraph2D *gr = new TGraph2D();
+  FindCoG(valid_slabs,gr);
+  gr->SetTitle(";x;z;y");
+  gr->GetXaxis()->SetRangeUser(-95,95);
+  gr->Draw("p0");
+  c0->Draw();
 
 
 
@@ -193,7 +205,7 @@ Bool_t TBDisplay::GotoEvent(Int_t ev)
   return kTRUE;
 }
 
-void TBDisplay::FindCoG(TGraph2D *gr)
+void TBDisplay::FindCoG(vector<Int_t> arr, TGraph2D *gr)
 {
   Float_t Xcm[nslabs] = {0};
   Float_t Ycm[nslabs] = {0};
@@ -202,24 +214,16 @@ void TBDisplay::FindCoG(TGraph2D *gr)
 
   // Load event data into visualization structures.
   for (int ihit=0; ihit<nhit_len; ihit++){
-    
-    for (int islab = 0; islab < nslabs; islab++)
+
+    if (std::binary_search(arr.begin(), arr.end(), hit_slab[ihit]))
     {
-        if (hit_slab[ihit]==islab)
-        {
-        // CoG based on hit energy
-          Xcm[islab]  += hit_x[ihit] * hit_energy[ihit];
-          Ycm[islab]  += hit_y[ihit] * hit_energy[ihit];
-          Wsum[islab] += hit_energy[ihit];
-        // CoG based on adc high
-          // Xcm[islab]  += hit_x[ihit] * hit_adc_high[ihit];
-          // Ycm[islab]  += hit_y[ihit] * hit_adc_high[ihit];
-          // Wsum[islab] += hit_adc_high[ihit];
+    // CoG based on hit energy
+      Xcm[hit_slab[ihit]]  += hit_x[ihit] * hit_energy[ihit];
+      Ycm[hit_slab[ihit]]  += hit_y[ihit] * hit_energy[ihit];
+      Wsum[hit_slab[ihit]] += hit_energy[ihit];
 
-          Zcm[islab]  =  hit_z[ihit];
-        }
-
-    } // match slab
+      Zcm[hit_slab[ihit]]  =  hit_z[ihit];
+    }
 
   } // hit loop
 
@@ -231,18 +235,23 @@ void TBDisplay::FindCoG(TGraph2D *gr)
     Xcm[islab] = Xcm[islab] / Wsum[islab];
     Ycm[islab] = Ycm[islab] / Wsum[islab];
 
+    cout << Xcm[islab] << " | " << Ycm[islab] << endl;
+
     gr->SetPoint(islab,Xcm[islab],Zcm[islab],Ycm[islab]);
 
   } // match slab
 }
 
-vector<Float_t> TBDisplay::Mean_SD(vector<Float_t> arr)
+vector<Float_t> TBDisplay::Mean_SD(int slab, vector<Float_t> arr)
 {
-  static vector<Float_t> Mean_SD_vec{-1000,-1000};
+  static vector<Float_t> Mean_SD_vec;
   Float_t sum   = 0;
   Int_t nhits = arr.size();
+  Mean_SD_vec = {static_cast<float>(slab), static_cast<float>(nhits), -1000.0, -1000.0};
 
-  if (nhits == 0) return Mean_SD_vec;
+  if (nhits == 0) {
+    return Mean_SD_vec;
+  }
 
   for (int i=0; i<nhits; i++){
     sum += arr.at(i);
@@ -256,8 +265,10 @@ vector<Float_t> TBDisplay::Mean_SD(vector<Float_t> arr)
 
   sigma = sqrt(sigma / nhits);
 
-  Mean_SD_vec[0] = mean;
-  Mean_SD_vec[1] = sigma;
+  Mean_SD_vec[0] = slab;
+  Mean_SD_vec[1] = nhits;
+  Mean_SD_vec[2] = mean;
+  Mean_SD_vec[3] = sigma;
 
   return Mean_SD_vec;
 

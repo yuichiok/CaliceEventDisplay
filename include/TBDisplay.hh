@@ -109,8 +109,8 @@ public :
    virtual void     MakeViewerScene(TEveWindowSlot* slot, TEveViewer*& v, TEveScene*& s);
 
    // Fitting
-   virtual void     FindCoG(TGraph2D *gr);
-   virtual vector<Float_t> Mean_SD(vector<Float_t> arr); 
+   virtual void     FindCoG(vector<Int_t> arr, TGraph2D *gr);
+   virtual vector<Float_t> Mean_SD(int slab, vector<Float_t> arr); 
 
    // Hit Info
    virtual void     LoadHits(TEvePointSet*& ps,int i);
