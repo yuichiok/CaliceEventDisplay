@@ -115,6 +115,8 @@ Bool_t TBDisplay::GotoEvent(Int_t ev)
   // TGraph2D *gr_profile = new TGraph2D();
   Float_t X0s[nslabs] = {1.198630137, 2.397260274, 3.595890411, 4.794520548, 5.993150685, 7.191780822, 8.390410959, 9.589041096, 10.78767123, 12.38584475, 13.98401826, 15.58219178, 17.1803653, 18.77853881, 20.37671233};
   Float_t E_layers[nslabs] = {0};
+  vector<Float_t> layer_hit_x[nslabs];
+  vector<Float_t> layer_hit_y[nslabs];
 
   // 2D Hit Maps
   TH2F *hitmap[nslabs];
@@ -127,6 +129,8 @@ Bool_t TBDisplay::GotoEvent(Int_t ev)
   for (int ihit=0; ihit<nhit_len; ihit++){
     
     E_layers[hit_slab[ihit]] += hit_energy[ihit];
+    layer_hit_x[hit_slab[ihit]].push_back(hit_x[ihit]);
+    layer_hit_y[hit_slab[ihit]].push_back(hit_y[ihit]);
 
     hitmap[hit_slab[ihit]]->Fill(hit_x[ihit], hit_y[ihit], hit_energy[ihit]);
 
@@ -161,6 +165,22 @@ Bool_t TBDisplay::GotoEvent(Int_t ev)
   gr_profile->Draw("AC*");
   c2->Draw();
 
+  vector<vector<Float_t>> Mean_SD_x;
+  vector<vector<Float_t>> Mean_SD_y;
+  cout << " x | y " << endl;
+  for (int i=0; i<nslabs; i++){
+    vector<Float_t> iMean_SD_x = Mean_SD(layer_hit_x[i]);
+    vector<Float_t> iMean_SD_y = Mean_SD(layer_hit_y[i]);
+
+      // cout << "layer " << i << " | " << iMean_SD_x << " | " << iMean_SD_y << endl;
+      // cout << "layer " << i << " | " << iMean_SD_x[0] << " " << iMean_SD_x[1] << " | " << iMean_SD_y[0] << " " << iMean_SD_y[1] << endl;
+
+    if(layer_hit_x[i].size()){
+      Mean_SD_x.push_back(iMean_SD_x);
+      Mean_SD_y.push_back(iMean_SD_y);
+      cout << "layer " << i << " | " << iMean_SD_x[0] << " " << iMean_SD_x[1] << " | " << iMean_SD_y[0] << " " << iMean_SD_y[1] << endl;
+    }
+  }
 
 
 
@@ -214,6 +234,33 @@ void TBDisplay::FindCoG(TGraph2D *gr)
     gr->SetPoint(islab,Xcm[islab],Zcm[islab],Ycm[islab]);
 
   } // match slab
+}
+
+vector<Float_t> TBDisplay::Mean_SD(vector<Float_t> arr)
+{
+  static vector<Float_t> Mean_SD_vec{-1000,-1000};
+  Float_t sum   = 0;
+  Int_t nhits = arr.size();
+
+  if (nhits == 0) return Mean_SD_vec;
+
+  for (int i=0; i<nhits; i++){
+    sum += arr.at(i);
+  }
+
+  Float_t mean  = sum / nhits;
+  Float_t sigma = 0;
+  for (int i=0; i<nhits; i++){
+    sigma += pow(arr.at(i) - mean, 2);
+  }
+
+  sigma = sqrt(sigma / nhits);
+
+  Mean_SD_vec[0] = mean;
+  Mean_SD_vec[1] = sigma;
+
+  return Mean_SD_vec;
+
 }
 
 //______________________________________________________________________________
