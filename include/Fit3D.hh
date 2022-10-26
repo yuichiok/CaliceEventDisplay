@@ -25,12 +25,12 @@ struct Fit3D {
    Fit3D(TGraph2D *g) : fGraph(g) {}
  
    // calculate distance line-point
-   double distance2(double x,double y,double z, const double *p) {
+   double distance2(double x,double z,double y, const double *p) {
       // distance line point is D= | (xp-x0) cross  ux |
       // where ux is direction of line and x0 is a point in the line (like t = 0)
       XYZVector xp(x,y,z);
-      XYZVector x0(p[0], p[2], 0. );
-      XYZVector x1(p[0] + p[1], p[2] + p[3], 1. );
+      XYZVector x0(p[0], p[1], 0. );
+      XYZVector x1(p[0], p[1], 1. );
       XYZVector u = (x1-x0).Unit();
       double d2 = ((xp-x0).Cross(u)).Mag2();
       return d2;

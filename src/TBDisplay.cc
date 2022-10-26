@@ -39,6 +39,18 @@ const int nscas = 15;
 const float beamX = 20.0, beamY = 15.0;
 const float MARKER_SIZE = 3.5;
 
+// define the parametric line equation
+void line(double t, const double *p, double &x, double &y, double &z) {
+   // a parametric line is define from 6 parameters but 4 are independent
+   // x0,y0,z0,z1,y1,z1 which are the coordinates of two points on the line
+   // can choose z0 = 0 if line not parallel to x-y plane and z1 = 1;
+  //  x = p[0] + p[1]*t;
+  //  y = p[2] + p[3]*t;
+   x = p[0];
+   z = p[1];
+   y = t;
+}
+
 void TBDisplay::Next()
 {
   GotoEvent(fCurEv + 1);
@@ -190,11 +202,51 @@ Bool_t TBDisplay::GotoEvent(Int_t ev)
   TCanvas  *c0 = new TCanvas("c0","c0",800,800);
   TGraph2D *gr = new TGraph2D();
   FindCoG(valid_slabs,gr);
+
+  cout << gr->GetN() << endl;
+
+  ROOT::Fit::Fitter  fitter;
+  // make the functor objet
+  Fit3D sdist(gr);
+  ROOT::Math::Functor fcn(sdist,2);
+  // set the function and the initial parameter values
+  double pStart[2] = {-50,-100};
+  fitter.SetFCN(fcn,pStart);
+  // set step sizes different than default ones (0.3 times parameter values)
+  for (int i = 0; i < 2; ++i) fitter.Config().ParSettings(i).SetStepSize(0.01);
+
+  bool ok = fitter.FitFCN();
+  if (!ok) {
+    Error("line3Dfit","Line3D Fit failed");
+    return false;
+  }
+  const ROOT::Fit::FitResult & result = fitter.Result();
+
+  std::cout << "Total final distance square " << result.MinFcnValue() << std::endl;
+  result.Print(std::cout);
+
   gr->SetTitle(";x;z;y");
   gr->GetXaxis()->SetRangeUser(-95,95);
   gr->Draw("p0");
-  c0->Draw();
 
+  // get fit parameters
+  const double * parFit = result.GetParams();
+
+  // draw the fitted line
+  int n = 1000;
+  double t0 = 0;
+  double dt = 210;
+  TPolyLine3D *l = new TPolyLine3D(n);
+  for (int i = 0; i <n;++i) {
+    double t = t0+ dt*i/n;
+    double x,y,z;
+    line(t,parFit,x,y,z);
+    l->SetPoint(i,x,y,z);
+  }
+  l->SetLineColor(kRed);
+  l->Draw("same");
+
+  c0->Draw();
 
 
   // MultiView
@@ -237,7 +289,8 @@ void TBDisplay::FindCoG(vector<Int_t> arr, TGraph2D *gr)
 
     cout << Xcm[islab] << " | " << Ycm[islab] << endl;
 
-    gr->SetPoint(islab,Xcm[islab],Zcm[islab],Ycm[islab]);
+    gr->SetPoint(N,Xcm[islab],Zcm[islab],Ycm[islab]);
+    N++;
 
   } // match slab
 }
