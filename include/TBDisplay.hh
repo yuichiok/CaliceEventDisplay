@@ -110,7 +110,8 @@ public :
 
    // Fitting
    virtual void     FindCoG(vector<Int_t> arr, TGraph2D *gr);
-   virtual vector<Float_t> Mean_SD(int slab, vector<Float_t> arr); 
+   virtual vector<Float_t> Mean_SD(int slab, vector<Float_t> arr);
+   virtual void     BeamAxisLine(const double *p);
 
    // Hit Info
    virtual void     LoadHits(TEvePointSet*& ps,int i);

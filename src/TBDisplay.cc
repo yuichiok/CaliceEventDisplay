@@ -215,8 +215,8 @@ Bool_t TBDisplay::GotoEvent(Int_t ev)
   // set step sizes different than default ones (0.3 times parameter values)
   for (int i = 0; i < 2; ++i) fitter.Config().ParSettings(i).SetStepSize(0.01);
 
-  bool ok = fitter.FitFCN();
-  if (!ok) {
+  bool fit_ok = fitter.FitFCN();
+  if (!fit_ok) {
     Error("line3Dfit","Line3D Fit failed");
     return false;
   }
@@ -247,6 +247,10 @@ Bool_t TBDisplay::GotoEvent(Int_t ev)
   l->Draw("same");
 
   c0->Draw();
+
+  if(fit_ok){
+    BeamAxisLine(parFit);
+  }
 
 
   // MultiView
@@ -324,6 +328,22 @@ vector<Float_t> TBDisplay::Mean_SD(int slab, vector<Float_t> arr)
   Mean_SD_vec[3] = sigma;
 
   return Mean_SD_vec;
+
+}
+
+void TBDisplay::BeamAxisLine(const double *p)
+{
+  double x0,y0,z0;
+  double x1,y1,z1;
+  line(0,p,x0,z0,y0);
+  line(210,p,x1,z1,y1);
+
+  auto BeamLine = new TEveStraightLineSet();
+  BeamLine->AddLine( x0,y0,z0,
+                     x1,y1,z1);
+
+  gEve->AddElement(BeamLine);
+  gEve->Redraw3D();
 
 }
 
