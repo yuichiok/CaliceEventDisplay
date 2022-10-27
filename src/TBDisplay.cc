@@ -124,7 +124,6 @@ Bool_t TBDisplay::GotoEvent(Int_t ev)
   nb = fChain->GetEntry(evlist->GetEntry(ev));
 
   // Profile
-  // TGraph2D *gr_profile = new TGraph2D();
   Float_t X0s[nslabs] = {1.198630137, 2.397260274, 3.595890411, 4.794520548, 5.993150685, 7.191780822, 8.390410959, 9.589041096, 10.78767123, 12.38584475, 13.98401826, 15.58219178, 17.1803653, 18.77853881, 20.37671233};
   Float_t E_layers[nslabs] = {0};
   vector<Float_t> layer_hit_x[nslabs];
@@ -175,7 +174,6 @@ Bool_t TBDisplay::GotoEvent(Int_t ev)
     vector<Float_t> iMean_SD_x = Mean_SD(islab, layer_hit_x[islab]);
     vector<Float_t> iMean_SD_y = Mean_SD(islab, layer_hit_y[islab]);
 
-    // cout << "layer " << iMean_SD_x.at(0) << " | " << iMean_SD_x.at(2) << " " << iMean_SD_x.at(3) << " | " << iMean_SD_y.at(2) << " " << iMean_SD_y.at(3) << " :: " << iMean_SD_x.at(1)<< endl;
     Mean_SD_x.push_back(iMean_SD_x);
     Mean_SD_y.push_back(iMean_SD_y);
   }
@@ -248,7 +246,7 @@ Bool_t TBDisplay::GotoEvent(Int_t ev)
 
   c0->Draw();
 
-  if(fit_ok){
+  if(fit_ok && 2 < gr->GetN()){
     BeamAxisLine(parFit);
   }
 
@@ -341,6 +339,7 @@ void TBDisplay::BeamAxisLine(const double *p)
   auto BeamLine = new TEveStraightLineSet();
   BeamLine->AddLine( x0,y0,z0,
                      x1,y1,z1);
+  BeamLine->SetLineColor(kRed);
 
   gEve->AddElement(BeamLine);
   gEve->Redraw3D();
