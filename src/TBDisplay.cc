@@ -137,6 +137,8 @@ Bool_t TBDisplay::GotoEvent(Int_t ev)
   }
 
   // Load event data into visualization structures.
+  cout << "number of hits: " << nhit_len   << endl;
+  cout << "sum energy    : " << sum_energy << endl;
   for (int ihit=0; ihit<nhit_len; ihit++){
     
     E_layers[hit_slab[ihit]] += hit_energy[ihit];
