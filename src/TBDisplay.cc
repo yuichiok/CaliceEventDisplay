@@ -176,6 +176,9 @@ Bool_t TBDisplay::GotoEvent(Int_t ev)
     vector<Float_t> iMean_SD_x = Mean_SD(islab, layer_hit_x[islab]);
     vector<Float_t> iMean_SD_y = Mean_SD(islab, layer_hit_y[islab]);
 
+    cout << "SDX" << islab << ": " << iMean_SD_x.at(3) << " ";
+    cout << "SDY" << islab << ": " << iMean_SD_y.at(3) << endl;
+
     Mean_SD_x.push_back(iMean_SD_x);
     Mean_SD_y.push_back(iMean_SD_y);
   }
