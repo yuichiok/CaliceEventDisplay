@@ -136,6 +136,9 @@ Bool_t TBDisplay::GotoEvent(Int_t ev)
     hitmap[islab] = new TH2F(h2name,h2name,32,-90,90,32,-90,90);
   }
 
+  cout << "spill: " << spill << " cycle: " << cycle << endl;
+  cout << "BCID : " << bcid << " BCID END: " << bcid_merge_end << " BCID First SCA Full: " << bcid_first_sca_full << endl;
+
   // Load event data into visualization structures.
   cout << "number of hits: " << nhit_len   << endl;
   cout << "sum energy    : " << sum_energy << endl;
