@@ -144,6 +144,9 @@ Bool_t TBDisplay::GotoEvent(Int_t ev)
   cout << "sum energy    : " << sum_energy << endl;
   for (int ihit=0; ihit<nhit_len; ihit++){
     
+    // Check masking
+    if( hit_isMasked[ihit] ) continue;
+
     E_layers[hit_slab[ihit]] += hit_energy[ihit];
     layer_hit_x[hit_slab[ihit]].push_back(hit_x[ihit]);
     layer_hit_y[hit_slab[ihit]].push_back(hit_y[ihit]);
@@ -276,6 +279,9 @@ void TBDisplay::FindCoG(vector<Int_t> arr, TGraph2D *gr)
 
   // Load event data into visualization structures.
   for (int ihit=0; ihit<nhit_len; ihit++){
+
+    // Check masking
+    if ( hit_isMasked[ihit] ) continue;
 
     if (std::binary_search(arr.begin(), arr.end(), hit_slab[ihit]))
     {
