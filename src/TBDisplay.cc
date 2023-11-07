@@ -33,7 +33,7 @@
 using std::cout;
 using std::endl;
 
-const bool debug = false;
+const bool debug = true;
 const int nslabs = 15;
 const int nscas = 15;
 const float beamX = 20.0, beamY = 15.0;
@@ -122,6 +122,9 @@ Bool_t TBDisplay::GotoEvent(Int_t ev)
   }
 
   nb = fChain->GetEntry(evlist->GetEntry(ev));
+
+  // Print Info
+  Debug(debug);
 
   // Profile
   Float_t X0s[nslabs] = {1.198630137, 2.397260274, 3.595890411, 4.794520548, 5.993150685, 7.191780822, 8.390410959, 9.589041096, 10.78767123, 12.38584475, 13.98401826, 15.58219178, 17.1803653, 18.77853881, 20.37671233};
@@ -452,12 +455,17 @@ void TBDisplay::ProjectView()
   gMultiView->ImportEventRhoZ(top);
 }
 
-void TBDisplay::Debug(bool debug=false, Long64_t entry=0)
+void TBDisplay::Debug(bool debug=false)
 {
 
   if(!debug) return;
-  else if( !(entry % 10000) ) return;
 
+  cout << "================= Debug =================" << endl;
+  cout << endl;
+  cout << "sum_energy = " << sum_energy << endl;
+  cout << "nhit_len = " << nhit_len << endl;
+
+  cout << "hit_sca = " ;
   for (int ihit = 0; ihit < nhit_len; ++ihit)
   {
 
@@ -466,5 +474,8 @@ void TBDisplay::Debug(bool debug=false, Long64_t entry=0)
   }
 
   cout << endl;
+
+  cout << endl;
+  cout << "================= Debug =================" << endl;
   
 }
