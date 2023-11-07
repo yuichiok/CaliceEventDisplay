@@ -139,9 +139,17 @@ Bool_t TBDisplay::GotoEvent(Int_t ev)
     hitmap[islab] = new TH2F(h2name,h2name,32,-90,90,32,-90,90);
   }
 
+  cout << "spill: " << spill << " cycle: " << cycle << endl;
+  cout << "BCID : " << bcid << " BCID END: " << bcid_merge_end << " BCID First SCA Full: " << bcid_first_sca_full << endl;
+
   // Load event data into visualization structures.
+  cout << "number of hits: " << nhit_len   << endl;
+  cout << "sum energy    : " << sum_energy << endl;
   for (int ihit=0; ihit<nhit_len; ihit++){
     
+    // Check masking
+    if( hit_isMasked[ihit] ) continue;
+
     E_layers[hit_slab[ihit]] += hit_energy[ihit];
     layer_hit_x[hit_slab[ihit]].push_back(hit_x[ihit]);
     layer_hit_y[hit_slab[ihit]].push_back(hit_y[ihit]);
@@ -176,6 +184,9 @@ Bool_t TBDisplay::GotoEvent(Int_t ev)
   for (int islab=0; islab<nslabs; islab++){
     vector<Float_t> iMean_SD_x = Mean_SD(islab, layer_hit_x[islab]);
     vector<Float_t> iMean_SD_y = Mean_SD(islab, layer_hit_y[islab]);
+
+    cout << "SDX" << islab << ": " << iMean_SD_x.at(3) << " ";
+    cout << "SDY" << islab << ": " << iMean_SD_y.at(3) << endl;
 
     Mean_SD_x.push_back(iMean_SD_x);
     Mean_SD_y.push_back(iMean_SD_y);
@@ -271,6 +282,9 @@ void TBDisplay::FindCoG(vector<Int_t> arr, TGraph2D *gr)
 
   // Load event data into visualization structures.
   for (int ihit=0; ihit<nhit_len; ihit++){
+
+    // Check masking
+    if ( hit_isMasked[ihit] ) continue;
 
     if (std::binary_search(arr.begin(), arr.end(), hit_slab[ihit]))
     {
