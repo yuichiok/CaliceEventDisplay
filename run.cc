@@ -69,7 +69,8 @@ void make_gui()
    auto browser = gEve->GetBrowser();
    browser->StartEmbedding(TRootBrowser::kLeft);
 
-   auto frmMain = new TGMainFrame(gClient->GetRoot(), 1000, 600);
+   // auto frmMain = new TGMainFrame(gClient->GetRoot(), 1000, 600);
+   auto frmMain = new TGMainFrame(gClient->GetRoot(), 1200, 1200);
    frmMain->SetWindowName("XX GUI");
    frmMain->SetCleanup(kDeepCleanup);
 

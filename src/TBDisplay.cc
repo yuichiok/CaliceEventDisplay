@@ -165,7 +165,7 @@ Bool_t TBDisplay::GotoEvent(Int_t ev)
 
 
   // Hit Map
-  TCanvas *c1 = new TCanvas("c1","c1",800,800);
+  TCanvas *c1 = new TCanvas("c1","c1",1200,1200);
   c1->Divide(4,4);
   for (int islab=0; islab<nslabs; islab++){
     c1->cd(islab+1);
